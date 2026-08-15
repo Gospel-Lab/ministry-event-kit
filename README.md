@@ -34,6 +34,13 @@ Claude Code에서:
 /plugin install event-kit@ministry-event-kit
 ```
 
+이미 설치해 두셨다면 **`install` 이 아니라 `update`** 입니다. `install` 은 이미 깔린 플러그인을 그냥 넘어갑니다.
+
+```
+/plugin marketplace update ministry-event-kit
+/plugin update event-kit@ministry-event-kit
+```
+
 설치 없이 시험만 해보려면:
 
 ```bash
