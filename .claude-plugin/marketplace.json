@@ -1,0 +1,20 @@
+{
+  "name": "ministry-event-kit",
+  "owner": {
+    "name": "Gospel Lab",
+    "url": "https://github.com/Gospel-Lab"
+  },
+  "plugins": [
+    {
+      "name": "event-kit",
+      "source": "./",
+      "description": "교회·비영리 행사 인쇄물·신청페이지 생성 키트 (현수막·명찰·랜딩페이지)",
+      "version": "0.1.0",
+      "category": "productivity"
+    }
+  ],
+  "description": "교회·비영리 행사 준비를 돕는 플러그인 모음. 행사 정보 한 번만 적으면 현수막·명찰·신청페이지가 실측 인쇄 규격으로 나옵니다.",
+  "metadata": {
+    "version": "0.1.0"
+  }
+}
