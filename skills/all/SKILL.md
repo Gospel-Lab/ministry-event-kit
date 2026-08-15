@@ -15,6 +15,7 @@ description: 현수막·명찰·랜딩페이지를 한 번에 만듭니다. 행�
 ```bash
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py"  --event event.yml --out out/banner
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_badges.py"  --event event.yml --people participants.csv --out out/badge
+python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_poster.py"  --event event.yml --out out/poster
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_landing.py" --event event.yml --out out/landing
 ```
 

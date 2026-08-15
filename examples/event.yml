@@ -40,6 +40,15 @@ banner:
                                    # split  좌우 나눔 (왼쪽 제목 · 오른쪽 날짜/장소)
   motif: circuit                   # circuit 회로무늬 / grid 격자만 / dots 점무늬 / plain 없음
 
+poster:
+  size: A3                         # A4 / A3 / A2 / A1  (A3 = 297×420, 게시판용)
+  bleed_mm: 3                      # 도련
+  # lead: 한 줄 소개 (없으면 landing.lead 를 씁니다)
+  # join_url: https://...          (없으면 landing.form_url 을 씁니다 → QR 로 들어갑니다)
+  # join_label: 신청하기
+  # info:                          # 아래쪽에 작게 들어갈 부차 정보
+  #   - 회비 | 어른 12만 원
+
 badge:
   width_mm: 93
   height_mm: 124

@@ -7,6 +7,7 @@
 
 ```
 event.yml  ──┬──▶  현수막      실측 PDF + CMYK 이미지 + 발주안내
+             ├──▶  포스터      A4~A1 인쇄용 + 카톡·인스타용 이미지 + 신청 QR
              ├──▶  명찰        명단 CSV → 인원수만큼 한 번에 (A4 4개씩 배치본 포함)
              └──▶  신청페이지   구글폼 버튼 + 그대로 배포 가능
 ```
@@ -55,6 +56,7 @@ claude --plugin-dir ./ministry-event-kit
 | **구글 크롬** | 실측 PDF를 만듭니다 | 필수 |
 | Python 3.9+ | 생성 스크립트 | 필수 (맥·리눅스는 기본 설치됨) |
 | Ghostscript | CMYK 변환 | PDF는 정상, CMYK 이미지만 건너뜁니다 |
+| segno | 포스터 QR 코드 | 주소가 글자로 들어갑니다 |
 | Pillow · numpy | CMYK 색 보정 | 위와 같음 |
 
 ```bash
@@ -82,6 +84,7 @@ python3 scripts/doctor.py     # 윈도우: python scripts\doctor.py
 /event-kit:check      이 컴퓨터에서 돌아가는지 먼저 점검합니다
 /event-kit:setup      행사 정보를 물어 event.yml 을 만듭니다
 /event-kit:banner     현수막
+/event-kit:poster     포스터 (인쇄용 + 웹용)
 /event-kit:badge      명찰 (명단 CSV 필요)
 /event-kit:landing    신청 랜딩페이지
 /event-kit:all        전부 한 번에
@@ -93,6 +96,7 @@ python3 scripts/doctor.py     # 윈도우: python scripts\doctor.py
 
 ```bash
 python3 scripts/make_banner.py  --event event.yml --out out/banner
+python3 scripts/make_poster.py  --event event.yml --out out/poster
 python3 scripts/make_badges.py  --event event.yml --people participants.csv --out out/badge
 python3 scripts/make_landing.py --event event.yml --out out/landing
 ```
@@ -130,6 +134,29 @@ schedule:
 일정은 **`날짜 묶음 | 시간 내용`** 형식으로 씁니다. 이 형식이라야 명찰 뒷면과 랜딩페이지에서 날짜별로 묶입니다.
 
 ---
+
+---
+
+## 행사 성격을 적으면 알아서 정해집니다
+
+색이나 크기를 하나하나 정하기 어렵다면, **누가 오는 행사인지** 세 줄만 적으세요.
+
+```yaml
+brief:
+  audience: 어르신     # 어린이 / 청소년 / 청년 / 장년 / 어르신 / 전교인 / 외부초청
+  mood: 경건           # 경건 / 활기 / 따뜻 / 장중
+  formality: 격식      # 격식 / 보통 / 편안
+```
+
+색 묶음·강조색·현수막 배치·배경 무늬·글자 크기가 여기서 정해집니다.
+**직접 정한 값이 있으면 그쪽이 항상 이깁니다.** brief 는 빈칸만 채웁니다.
+
+예를 들어 `audience: 어르신` 이면 본문 글자가 15% 커지고 대비가 높은 색으로 갑니다.
+나이가 들면 대비 감도가 40세부터 떨어져 80세에는 최대 83%까지 낮아지기 때문입니다.
+근거와 전체 표는 [docs/design-rules.md](docs/design-rules.md) 에 출처와 함께 있습니다.
+
+> ⚠️ **어린이 행사는 아직 절반만 됩니다.** 어린이 디자인의 기본인 밝은 배경이
+> 이 키트에는 아직 없습니다(어두운 배경 한 가지만 만듭니다). 밝은 테마는 다음 과제입니다.
 
 ## 우리 단체 색으로 바꾸기
 
@@ -240,7 +267,7 @@ ministry-event-kit/
 ├─ templates/          현수막 SVG 템플릿
 ├─ assets/fonts/       Pretendard 서브셋 (OFL 1.1)
 ├─ examples/           event.yml · participants.csv
-└─ docs/               인쇄 규격 참고
+└─ docs/               인쇄 규격 · 디자인 규칙(근거와 출처)
 ```
 
 ---
