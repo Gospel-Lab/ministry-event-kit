@@ -102,6 +102,54 @@ def load_event(path: str | Path) -> dict:
         return _mini_yaml(raw)
 
 
+def _strip_comment(s: str) -> str:
+    """줄 끝 주석을 떼되 따옴표 안은 건드리지 않습니다.
+
+    색을 "#0a2f3a" 처럼 적으면 값 안에 #이 들어갑니다. 단순히 #에서 자르면
+    색이 통째로 날아갑니다. YAML 규칙대로 '공백 뒤의 #'만 주석으로 봅니다.
+    """
+    out: list[str] = []
+    quote = ""
+    for ch in s:
+        if quote:
+            out.append(ch)
+            if ch == quote:
+                quote = ""
+        elif ch in "\"'":
+            quote = ch
+            out.append(ch)
+        elif ch == "#" and (not out or out[-1] in " \t"):
+            break
+        else:
+            out.append(ch)
+    return "".join(out).rstrip()
+
+
+def _split_flow(s: str) -> list[str]:
+    """{a: 1, b: 2} 안쪽을 쉼표로 나눕니다. 따옴표·중괄호 안의 쉼표는 셈하지 않습니다."""
+    parts, buf, depth, quote = [], [], 0, ""
+    for ch in s:
+        if quote:
+            buf.append(ch)
+            if ch == quote:
+                quote = ""
+            continue
+        if ch in "\"'":
+            quote = ch
+        elif ch in "{[":
+            depth += 1
+        elif ch in "}]":
+            depth -= 1
+        elif ch == "," and depth == 0:
+            parts.append("".join(buf))
+            buf = []
+            continue
+        buf.append(ch)
+    if "".join(buf).strip():
+        parts.append("".join(buf))
+    return parts
+
+
 def _mini_yaml(raw: str) -> dict:
     root: dict = {}
     stack = [(-1, root)]
@@ -109,7 +157,9 @@ def _mini_yaml(raw: str) -> dict:
         if not line.strip() or line.lstrip().startswith("#"):
             continue
         indent = len(line) - len(line.lstrip())
-        line_s = line.strip()
+        line_s = _strip_comment(line.strip())
+        if not line_s:
+            continue
         while stack and indent <= stack[-1][0]:
             stack.pop()
         parent = stack[-1][1]
@@ -135,7 +185,18 @@ def _mini_yaml(raw: str) -> dict:
 
 
 def _scalar(v: str):
-    v = v.strip().strip('"').strip("'")
+    v = v.strip()
+    # 한 줄로 적은 형태 — banner: {width_mm: 4000, height_mm: 900}
+    if v.startswith("{") and v.endswith("}"):
+        out: dict = {}
+        for part in _split_flow(v[1:-1]):
+            k, sep, val = part.partition(":")
+            if sep:
+                out[k.strip()] = _scalar(val)
+        return out
+    if v.startswith("[") and v.endswith("]"):
+        return [_scalar(x) for x in _split_flow(v[1:-1])]
+    v = v.strip('"').strip("'")
     if v.lower() in ("true", "false"):
         return v.lower() == "true"
     if re.fullmatch(r"-?\d+", v):
@@ -145,7 +206,10 @@ def _scalar(v: str):
 
 def _fix_lists(raw: str, tree: dict) -> dict:
     """_mini_yaml 보조 — '키:' 다음 줄이 '- '면 목록으로 만든다."""
-    lines = [l for l in raw.splitlines() if l.strip() and not l.lstrip().startswith("#")]
+    lines = [l[:len(l) - len(l.lstrip())] + _strip_comment(l.strip())
+             for l in raw.splitlines()
+             if l.strip() and not l.lstrip().startswith("#")]
+    lines = [l for l in lines if l.strip()]
     for i, line in enumerate(lines[:-1]):
         if line.strip().endswith(":"):
             nxt = lines[i + 1]
