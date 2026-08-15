@@ -94,7 +94,8 @@ dates: 2026. 8. 3.(월) ~ 8. 5.(수)
 place: 가평 수양관
 
 brand:
-  palette: plum          # plum / navy / forest / wine
+  palette: plum          # 색 묶음 (아래 표 참고)
+  accent: gold           # 강조색만 따로
 
 banner:
   width_mm: 4000         # 400cm
@@ -102,6 +103,8 @@ banner:
   finish: 봉미싱          # 마감에 따라 글자 여백이 자동으로 달라집니다
   accent_word: 수련회      # 이 단어만 다른 색으로
   show_dates: true       # false 면 날짜를 빼서 다음 해에도 그대로 씁니다
+  layout: center         # center / left / split
+  motif: circuit         # circuit / grid / dots / plain
 
 schedule:
   - 1일차 8/3 월 | 14:00 등록 · 개회예배
@@ -109,6 +112,73 @@ schedule:
 ```
 
 일정은 **`날짜 묶음 | 시간 내용`** 형식으로 씁니다. 이 형식이라야 명찰 뒷면과 랜딩페이지에서 날짜별로 묶입니다.
+
+---
+
+## 우리 단체 색으로 바꾸기
+
+이 키트로 만든 티가 나지 않게, **색과 배치를 갈아끼울 수 있습니다.** 현수막·명찰·랜딩페이지가 늘 함께 바뀝니다.
+
+### 색
+
+세 가지 방법이 있습니다. 아래로 갈수록 자유롭습니다.
+
+```yaml
+brand:
+  palette: forest              # ① 준비된 색 묶음에서 고르기
+```
+| | | | |
+|---|---|---|---|
+| `plum` 보라 | `navy` 남색 | `forest` 녹색 | `wine` 자주 |
+| `slate` 청회색 | `clay` 황토 | | |
+
+```yaml
+brand:
+  palette: navy
+  accent: silver               # ② 강조색만 따로 — gold / silver / white / copper 또는 "#e0b96a"
+```
+
+강조색은 현수막 제목의 강조 단어, 명찰 참가자 배지와 금색 띠, 랜딩페이지 신청 버튼에 함께 걸립니다.
+
+```yaml
+brand:
+  colors:
+    base:   "#0a2f3a"          # ③ 아무 색이나 직접
+    accent: "#e0b96a"
+```
+
+`colors` 를 쓰면 명찰 카드 바탕, 랜딩 본문 글자, 구분선까지 **수십 가지 색을 이 두 개에서 계산**합니다. 색을 하나하나 지정할 필요가 없습니다.
+
+바탕색은 **어두운 색**이라야 합니다. 밝은 색을 주면 어둡게 낮추고 알려 드립니다. 현수막이 어두운 바탕에 밝은 글자라는 전제 위에 설계돼 있기 때문입니다.
+
+### 현수막 배치
+
+```yaml
+banner:
+  layout: left
+  motif: dots
+```
+
+| `layout` | |
+|---|---|
+| `center` | 가운데 정렬 — 무대 뒤 배경막처럼 정면에서 보는 자리 (기본) |
+| `left` | 왼쪽 정렬 — 오른쪽에 로고나 사진을 붙일 여백이 남습니다 |
+| `split` | 좌우 나눔 — 왼쪽에 제목, 오른쪽에 날짜·장소 |
+
+| `motif` | |
+|---|---|
+| `circuit` | 회로 무늬 (기본) |
+| `grid` | 격자만 |
+| `dots` | 점무늬 |
+| `plain` | 무늬 없음 |
+
+### 색이 안 어울리면 알려줍니다
+
+- 강조색이 바탕색과 같은 색 계열이면 → 강조 단어가 묻힌다고 알립니다
+- 강조색이 밝은 무채색(은색·흰색)인데 강조 단어를 지정했으면 → 제목과 구분되지 않는다고 알립니다
+- 바탕색이 청보라(색상각 243~264°)면 → 인쇄에서 남색으로 빠진다고 알립니다
+
+멈추지 않고 만들되, 인쇄를 넘기기 전에 볼 수 있게 말해 줍니다.
 
 ### 명단 CSV
 
@@ -150,7 +220,7 @@ schedule:
 ministry-event-kit/
 ├─ .claude-plugin/     플러그인·마켓플레이스 매니페스트
 ├─ skills/             setup · banner · badge · landing · all
-├─ scripts/            kit.py(공통 엔진) + 생성기 3종
+├─ scripts/            kit.py(공통 엔진) · theme.py(색) + 생성기 3종
 ├─ templates/          현수막 SVG 템플릿
 ├─ assets/fonts/       Pretendard 서브셋 (OFL 1.1)
 ├─ examples/           event.yml · participants.csv

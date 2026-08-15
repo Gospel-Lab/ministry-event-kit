@@ -1,7 +1,7 @@
 {
   "name": "event-kit",
-  "description": "교회·비영리 행사의 인쇄물과 신청 페이지를 한 번에 만듭니다. 행사 정보를 event.yml 에 한 번만 적으면 현수막·명찰(명단 일괄)·랜딩페이지가 실측 인쇄 규격으로 생성됩니다.",
-  "version": "0.1.0",
+  "description": "교회·비영리 행사의 인쇄물과 신청 페이지를 한 번에 만듭니다. 행사 정보를 event.yml 에 한 번만 적으면 현수막·명찰(명단 일괄)·랜딩페이지가 실측 인쇄 규격으로 생성됩니다. 색(6가지 묶음·강조색 별도 지정·직접 지정)과 현수막 배치(가운데/왼쪽/좌우나눔)를 고를 수 있습니다.",
+  "version": "0.2.0",
   "author": { "name": "AI 사역지원 기술연구소 (Gospel Lab)" },
   "homepage": "https://github.com/Gospel-Lab/ministry-event-kit",
   "repository": "https://github.com/Gospel-Lab/ministry-event-kit",

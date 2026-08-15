@@ -19,7 +19,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py" --event event.yml --out o
 | 파일 | 쓰임 |
 |---|---|
 | `banner_print.pdf` | 실측 벡터 PDF — 인쇄소 발주용 |
-| `banner_CMYK_150dpi.jpg` | CMYK 이미지 — 온라인 주문 업로드용 |
+| `banner_CMYK_(해상도)dpi.jpg` | CMYK 이미지 — 온라인 주문 업로드용. 큰 현수막은 해상도가 자동으로 낮아집니다 |
 | `banner.svg` | 편집용 원본 (좌표 1 = 1mm) |
 | `발주안내.txt` | 규격·여백·인쇄소에 전달할 문구 |
 
@@ -30,11 +30,19 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py" --event event.yml --out o
 1. 실측 크기가 맞는지 — `pdfinfo out/banner/banner_print.pdf | grep "Page size"` (72pt = 25.4mm)
 2. 타이틀 글자 높이 — `발주안내.txt` 에 적힌 값. **1m당 3cm** 기준으로 몇 미터에서 읽히는지 함께 말해주세요
 3. 파일 용량 — 온라인 주문처는 대개 500MB 이하만 받습니다
+4. **`!` 로 시작하는 경고가 떴는지** — 강조색이 바탕과 같은 계열이거나 인쇄에서 색이 빠질 때 알려줍니다. 그냥 넘기지 말고 사용자에게 그대로 전하세요
 
 ## 자주 나오는 요청
 
 - **"글씨를 더 크게"** — 글자 크기는 마감 여백 안에서 자동으로 최대치를 씁니다. 더 키우려면 `banner.finish` 를 여백이 작은 마감(`사방미싱`)으로 바꾸거나 제목을 짧게 하세요.
-- **"색을 바꿔줘"** — `brand.palette` 를 `plum / navy / forest / wine` 중에서 고릅니다.
+- **"색을 바꿔줘"** — 세 단계로 답하세요.
+  1. `brand.palette` — `plum / navy / forest / wine / slate / clay`
+  2. `brand.accent` — 강조색만 따로. `gold / silver / white / copper` 또는 `"#e0b96a"`
+  3. `brand.colors.base` + `accent` — 단체 상징색이 있으면 이쪽. 나머지 색은 전부 계산됩니다
+  셋 다 **명찰·랜딩페이지까지 함께** 바뀝니다. 현수막만 따로 놀지 않습니다.
+- **"배치를 바꿔줘"** — `banner.layout` 을 `center / left / split` 중에서 고릅니다.
+  오른쪽에 로고나 사진을 붙일 예정이면 `left`, 날짜를 크게 따로 보이려면 `split` 입니다.
+- **"배경 무늬가 부담스럽다"** — `banner.motif` 를 `grid`(격자만) 나 `plain`(없음) 으로 바꿉니다.
 - **"작년 것을 다시 쓰고 싶다"** — 제목에서 연도를 빼면 다음 해에도 그대로 씁니다. 실무자들이 실제로 쓰는 방법입니다.
 
 ## 인쇄 전에 반드시 전할 말

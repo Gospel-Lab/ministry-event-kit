@@ -19,31 +19,15 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import theme  # noqa: E402
 from kit import (copy_fonts, esc, font_css, html_to_pdf, info, load_event,  # noqa: E402
-                 ok, pdf_to_cmyk_image)
-
-# 색 묶음 — 현수막·랜딩페이지와 같은 이름을 씁니다 (brand.palette)
-THEMES = {
-    "plum":   dict(deep="#5f34a6", mid="#8a52d2", light="#bb8cec", ink="#2e1348",
-                   ink2="#6b5b8a", tint="rgba(123,79,192,", card="#f3ecfc",
-                   role="#7b4fc0", role_deep="#6533b0", role_mid="#8f5fd0"),
-    "navy":   dict(deep="#1b3a6b", mid="#2f5fa8", light="#7ba3e8", ink="#0f2440",
-                   ink2="#4a5d7a", tint="rgba(43,79,140,", card="#e9f0fa",
-                   role="#2f5fa8", role_deep="#1b3a6b", role_mid="#3f74c4"),
-    "forest": dict(deep="#14513a", mid="#2b8462", light="#6fd4a8", ink="#0d2b20",
-                   ink2="#456a5c", tint="rgba(30,110,80,", card="#e7f4ee",
-                   role="#2b8462", role_deep="#14513a", role_mid="#37a077"),
-    "wine":   dict(deep="#6b1230", mid="#a83057", light="#e08aa4", ink="#2a0714",
-                   ink2="#77505f", tint="rgba(150,40,75,", card="#fbeaf0",
-                   role="#a83057", role_deep="#6b1230", role_mid="#c04a72"),
-}
-GOLD = ("linear-gradient(135deg,#ecd69f,#c9a86a)", "#2c1342")
+                 ok, pdf_to_cmyk_image, warn)
 
 
 def role_style(role: str, th: dict):
-    """참가자는 골드, 강사는 그 행사 색, 나머지는 테두리."""
+    """참가자는 강조색, 강사는 그 행사 색, 나머지는 테두리."""
     if role in ("참가자", "참석자"):
-        return GOLD
+        return (f"linear-gradient(135deg,{th['chip1']},{th['chip2']})", th["chip_on"])
     if role in ("강사", "강사진", "인도자"):
         return (f"linear-gradient(135deg,{th['role_mid']},{th['role_deep']})", "#ffffff")
     return ("transparent", th["role"])
@@ -57,29 +41,29 @@ def css(font_prefix: str, th: dict) -> str:
   body {{ font-family:"KitSans","Pretendard","Apple SD Gothic Neo",sans-serif;
           -webkit-font-smoothing:antialiased; }}
 
-  .badge {{ position:relative; overflow:hidden; color:#33174f;
+  .badge {{ position:relative; overflow:hidden; color:{th["body"]};
     container-type:inline-size;
     background:
-      radial-gradient(ellipse 120% 70% at 50% -6%, {th["tint"]}.22), transparent 62%),
-      linear-gradient(180deg,{th["card"]} 0%,#faf7fe 55%,#ffffff 100%); }}
+      radial-gradient(ellipse 120% 70% at 50% -6%, rgba({th["tint"]},.22), transparent 62%),
+      linear-gradient(180deg,{th["card"]} 0%,{th["card3"]} 55%,#ffffff 100%); }}
   .deco {{ position:absolute; inset:0; z-index:0;
     background-image:
-      linear-gradient({th["tint"]}.16) .28cqw, transparent .28cqw),
-      linear-gradient(90deg, {th["tint"]}.16) .28cqw, transparent .28cqw);
+      linear-gradient(rgba({th["tint"]},.16) .28cqw, transparent .28cqw),
+      linear-gradient(90deg, rgba({th["tint"]},.16) .28cqw, transparent .28cqw);
     background-size:7cqw 7cqw;
     mask-image:
       linear-gradient(180deg,#000 0%,transparent 26%,transparent 74%,#000 100%),
       linear-gradient(90deg,#000 0%,transparent 22%,transparent 78%,#000 100%);
     mask-composite:add; -webkit-mask-composite:source-over; }}
   .corner {{ position:absolute; width:5.4cqw; height:5.4cqw; z-index:3;
-    border:.32cqw solid rgba(184,149,91,.62); }}
+    border:.32cqw solid rgba({th["line"]},.62); }}
   .tl {{ top:2cqw; left:2cqw; border-right:0; border-bottom:0; border-top-left-radius:1cqw; }}
   .tr {{ top:2cqw; right:2cqw; border-left:0; border-bottom:0; border-top-right-radius:1cqw; }}
   .bl {{ bottom:2cqw; left:2cqw; border-right:0; border-top:0; border-bottom-left-radius:1cqw; }}
   .br {{ bottom:2cqw; right:2cqw; border-left:0; border-top:0; border-bottom-right-radius:1cqw; }}
   .card {{ position:absolute; inset:4.4cqw; z-index:2; border-radius:3.4cqw;
-    overflow:hidden; border:.3cqw solid rgba(184,149,91,.5);
-    background:linear-gradient(180deg,#fff 0%,#fbf8fe 62%,{th["card"]} 100%);
+    overflow:hidden; border:.3cqw solid rgba({th["line"]},.5);
+    background:linear-gradient(180deg,#fff 0%,{th["card2"]} 62%,{th["card"]} 100%);
     display:flex; flex-direction:column; }}
   .punch {{ position:absolute; top:8.2cqw; left:50%; transform:translateX(-50%);
     width:15cqw; height:3.2cqw; border-radius:2cqw; z-index:8;
@@ -90,10 +74,10 @@ def css(font_prefix: str, th: dict) -> str:
     border-bottom-left-radius:5cqw; border-bottom-right-radius:5cqw; }}
   .header::after {{ content:""; position:absolute; inset:0;
     background:radial-gradient(ellipse 70% 60% at 22% 0%, rgba(255,255,255,.26), transparent 60%); }}
-  .org {{ position:relative; font-size:3.2cqw; font-weight:700; letter-spacing:.13em; color:#f2ddb4; }}
+  .org {{ position:relative; font-size:3.2cqw; font-weight:700; letter-spacing:.13em; color:{th["org"]}; }}
   .ev {{ position:relative; font-size:4.6cqw; font-weight:800; letter-spacing:-.02em; margin-top:1.2cqw; }}
   .gold {{ height:.6cqw; flex:none;
-    background:linear-gradient(90deg,transparent,#c9a86a 22%,#eddcb4 50%,#c9a86a 78%,transparent); }}
+    background:linear-gradient(90deg,transparent,{th["bar1"]} 22%,{th["bar2"]} 50%,{th["bar1"]} 78%,transparent); }}
   .body {{ flex:1; display:flex; flex-direction:column; align-items:center;
     justify-content:center; gap:2.4cqw; padding:3cqw 4.5cqw; text-align:center; }}
   .name {{ font-weight:900; letter-spacing:-.05em; line-height:1; white-space:nowrap; color:{th["ink"]}; }}
@@ -102,12 +86,12 @@ def css(font_prefix: str, th: dict) -> str:
     padding:1.2cqw 3.8cqw; border-radius:99cqw; margin-top:.4cqw; }}
   .tail {{ flex:none; padding:0 5cqw 4.4cqw; }}
   .band {{ height:1.3cqw; border-radius:99cqw;
-    background:linear-gradient(90deg,#c9a86a,#eddcb4 38%,#a97ce0 100%); opacity:.9; }}
+    background:linear-gradient(90deg,{th["bar1"]},{th["bar2"]} 38%,{th["band"]} 100%); opacity:.9; }}
 
   /* 뒷면 일정표 */
   .back {{ padding:1.6cqw 2.2cqw; height:100%; display:flex; flex-direction:column; }}
   .sched {{ flex:1; display:flex; flex-direction:column; gap:.9cqw; }}
-  .day {{ background:{th["tint"]}.052); border-radius:2.4cqw; padding:1cqw 1.6cqw; }}
+  .day {{ background:rgba({th["tint"]},.052); border-radius:2.4cqw; padding:1cqw 1.6cqw; }}
   .dh {{ display:flex; align-items:center; justify-content:space-between;
     gap:1.4cqw; margin-bottom:.6cqw; }}
   .pill {{ display:inline-flex; align-items:baseline; gap:1.2cqw; white-space:nowrap;
@@ -117,13 +101,13 @@ def css(font_prefix: str, th: dict) -> str:
   .r {{ display:grid; grid-template-columns:4.4cqw 11cqw minmax(0,1fr); gap:1.2cqw;
     align-items:center; padding:.15cqw 0; }}
   .no {{ width:4.4cqw; height:4.4cqw; border-radius:50%; background:#fff;
-    border:.22cqw solid {th["tint"]}.3); color:{th["deep"]}; font-size:2.75cqw;
+    border:.22cqw solid rgba({th["tint"]},.3); color:{th["deep"]}; font-size:2.75cqw;
     font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; }}
   .t {{ font-size:3.5cqw; font-weight:700; color:{th["role"]};
     font-variant-numeric:tabular-nums; letter-spacing:-.03em; }}
   .s {{ font-size:3.8cqw; font-weight:600; color:{th["ink"]}; line-height:1.1; letter-spacing:-.03em; }}
-  .foot {{ flex:none; margin-top:.9cqw; padding-top:.8cqw; border-top:1px solid #ece3f7;
-    font-size:2.9cqw; color:#8d7fae; display:flex; justify-content:space-between; gap:1.4cqw; }}
+  .foot {{ flex:none; margin-top:.9cqw; padding-top:.8cqw; border-top:1px solid {th["rule"]};
+    font-size:2.9cqw; color:{th["ink3"]}; display:flex; justify-content:space-between; gap:1.4cqw; }}
   .foot b {{ color:{th["ink"]}; }}
 """
 
@@ -214,7 +198,13 @@ def read_people(path: Path) -> list[dict]:
 
 def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
     b = ev.get("badge") or {}
-    th = THEMES.get(str((ev.get("brand") or {}).get("palette", "plum")), THEMES["plum"])
+    tk = theme.resolve(ev, warn=warn)
+    acc = tk["accent"]
+    # 명찰이 쓸 색 = 바탕 계열 + 강조 계열. 색은 theme.py 한 곳에서만 정해집니다.
+    th = {**tk["badge"],
+          "chip1": acc["chip"][0], "chip2": acc["chip"][1],
+          "bar1": acc["bar"][0], "bar2": acc["bar"][1],
+          "org": acc["org"], "line": acc["line"]}
     w = float(b.get("width_mm", 93))
     h = float(b.get("height_mm", 124))
     outdir.mkdir(parents=True, exist_ok=True)
@@ -252,7 +242,7 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
     justify-content:center; align-content:center; gap:6mm;
     page-break-after:always; }}
   .sheet:last-child {{ page-break-after:auto; }}
-  .badge {{ width:{w}mm; height:{h}mm; outline:.2mm dashed #c9b8e4; outline-offset:0; }}
+  .badge {{ width:{w}mm; height:{h}mm; outline:.2mm dashed {th["cut"]}; outline-offset:0; }}
 """
         f3 = outdir / "_a4.html"
         f3.write_text(page_doc("명찰 A4 배치", style, pages, "", th), encoding="utf-8")
@@ -277,7 +267,7 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
   back_schedule.pdf  뒷면 일정표 — 양면 인쇄하거나 따로 뽑아 뒤에 넣으세요
 
 역할 배지 색
-  참가자 골드 채움 / 강사 보라 채움 / 섬김이·운영 보라 테두리
+  참가자 {tk['accent_label']} 채움 / 강사 {tk['palette_label']} 채움 / 섬김이·운영 {tk['palette_label']} 테두리
   명찰은 한 종류로 찍고 배지 색으로만 구분하므로, 남은 명찰은 다음 행사에 그대로 씁니다.
 """, encoding="utf-8")
     ok("인쇄안내.txt")

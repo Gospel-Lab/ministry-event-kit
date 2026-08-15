@@ -268,6 +268,10 @@ def _fix_purple(img):
     ICC 변환만 하면 C와 M 값이 비슷해져(차이 15 안팎) 보라가 남색으로 읽힙니다.
     진보라는 M이 C보다 30~40 높아야 합니다. C에서 M의 18%를 덜어냅니다.
     총 잉크량도 함께 내려갑니다.
+
+    이 보정은 색을 직접 지정(brand.colors)했을 때도 똑같이 걸립니다.
+    빨강·주황 계열은 C가 원래 낮아 거의 영향이 없고, 녹색·남색 계열은
+    준비된 색 묶음(forest·navy)이 이미 같은 보정을 거쳐 검증된 값입니다.
     """
     try:
         import numpy as np
@@ -313,3 +317,8 @@ def ok(msg: str) -> None:
 
 def info(msg: str) -> None:
     print(f"  · {msg}")
+
+
+def warn(msg: str) -> None:
+    """멈추지는 않지만 결과물이 예상과 다를 수 있을 때 알립니다."""
+    print(f"  ! {msg}")

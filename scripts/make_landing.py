@@ -14,20 +14,16 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from kit import copy_fonts, esc, font_css, info, load_event, ok  # noqa: E402
-
-THEMES = {
-    "plum":   ("#2e1348", "#5f34a6", "#9c62dd", "#c9a86a", "#f7f3fd"),
-    "navy":   ("#0d1b33", "#1b3a6b", "#3f6fb5", "#c9a86a", "#f2f5fa"),
-    "forest": ("#0d2b20", "#14513a", "#2b8462", "#c9a86a", "#f1f7f4"),
-    "wine":   ("#2a0714", "#6b1230", "#a83057", "#c9a86a", "#fbf2f5"),
-}
+import theme  # noqa: E402
+from kit import copy_fonts, esc, font_css, info, load_event, ok, warn  # noqa: E402
 
 
 def build(ev: dict, outdir: Path) -> Path:
     ld = ev.get("landing") or {}
-    brand = ev.get("brand") or {}
-    ink, deep, mid, gold, paper = THEMES.get(str(brand.get("palette", "plum")), THEMES["plum"])
+    tk = theme.resolve(ev, warn=warn)
+    la = tk["landing"]
+    # 강조색(신청 버튼·머리말)은 현수막·명찰과 같은 값을 씁니다
+    gold = tk["accent"]["chip"][1]
     outdir.mkdir(parents=True, exist_ok=True)
     copy_fonts(outdir)
 
@@ -79,8 +75,9 @@ def build(ev: dict, outdir: Path) -> Path:
 <style>
   {font_css("")}
   :root {{
-    --ink:{ink}; --deep:{deep}; --mid:{mid}; --gold:{gold}; --paper:{paper};
-    --ink2:#5b5170; --ink3:#8d84a3; --rule:#e3dcf0;
+    --ink:{la["ink"]}; --deep:{la["deep"]}; --mid:{la["mid"]}; --gold:{gold}; --paper:{la["paper"]};
+    --ink2:{la["ink2"]}; --ink3:{la["ink3"]}; --rule:{la["rule"]};
+    --hero:{la["hero_text"]}; --hero2:{la["hero_dim"]};
     --sans:"KitSans","Pretendard","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
   }}
   * {{ box-sizing:border-box; }}
@@ -101,12 +98,12 @@ def build(ev: dict, outdir: Path) -> Path:
   .hero .wrap {{ position:relative; }}
   .hero h1 {{ margin:0 0 14px; font-size:clamp(31px,8vw,46px); font-weight:900;
     letter-spacing:-.035em; line-height:1.16; }}
-  .hero p {{ margin:0 0 26px; color:#e6ddf7; font-size:18px; max-width:28em; }}
+  .hero p {{ margin:0 0 26px; color:var(--hero); font-size:18px; max-width:28em; }}
   .hero .when {{ display:inline-flex; flex-wrap:wrap; gap:6px 16px; padding:13px 0;
     border-top:1px solid rgba(255,255,255,.24); border-bottom:1px solid rgba(255,255,255,.24);
     font-variant-numeric:tabular-nums; }}
   .hero .when b {{ font-size:19px; font-weight:800; }}
-  .hero .when span {{ color:#d6c9ef; }}
+  .hero .when span {{ color:var(--hero2); }}
 
   .letter p {{ margin:0 0 1.4em; }}
   .letter p:last-child {{ margin-bottom:0; }}
@@ -125,7 +122,7 @@ def build(ev: dict, outdir: Path) -> Path:
   .sr .t {{ color:var(--mid); font-weight:700; font-variant-numeric:tabular-nums; }}
 
   .cta {{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
-    background:var(--gold); color:{ink}; font-size:18px; font-weight:800;
+    background:var(--gold); color:{la["ink"]}; font-size:18px; font-weight:800;
     text-decoration:none; padding:19px 22px; border-radius:5px;
     transition:filter .12s ease, transform .12s ease; }}
   .cta:hover {{ filter:brightness(1.05); transform:translateY(-1px); }}
@@ -134,8 +131,8 @@ def build(ev: dict, outdir: Path) -> Path:
   .apply {{ background:linear-gradient(150deg,var(--deep),var(--mid)); color:#fff; }}
   .apply h2 {{ margin:0 0 10px; font-size:clamp(24px,6vw,32px); font-weight:900;
     letter-spacing:-.03em; }}
-  .apply p {{ color:#e6ddf7; margin:0 0 24px; }}
-  .note {{ text-align:center; color:#d6c9ef; font-size:13.5px; margin:13px 0 0; }}
+  .apply p {{ color:var(--hero); margin:0 0 24px; }}
+  .note {{ text-align:center; color:var(--hero2); font-size:13.5px; margin:13px 0 0; }}
 
   .sticky {{ position:fixed; left:0; right:0; bottom:0; z-index:40;
     background:var(--deep); border-top:1px solid rgba(255,255,255,.16);
@@ -201,7 +198,7 @@ def build(ev: dict, outdir: Path) -> Path:
 """
     out = outdir / "index.html"
     out.write_text(html, encoding="utf-8")
-    ok(f"index.html  ({len(html)//1024}KB · 폰트 포함 · 의존성 없음)")
+    ok(f"index.html  ({len(html)//1024}KB · {tk['palette_label']} · {tk['accent_label']} · 의존성 없음)")
 
     (outdir / "배포안내.txt").write_text(
         f"""랜딩페이지 배포 안내 — {title}
