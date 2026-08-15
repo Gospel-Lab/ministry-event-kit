@@ -66,11 +66,20 @@ winget install ArtifexSoftware.GhostScript && pip install pillow numpy
 
 크롬이 표준 위치에 없으면 `CHROME_PATH` 환경변수로 알려주세요.
 
+**윈도우를 쓰신다면** — 이미 깔려 있는 **엣지(Edge)를 그대로 씁니다.** 크롬을 새로 설치하지 않아도 됩니다. 명령은 `python3` 대신 `python` 또는 `py -3` 입니다.
+
+무엇이 없는지 한 번에 보려면:
+
+```bash
+python3 scripts/doctor.py     # 윈도우: python scripts\doctor.py
+```
+
 ---
 
 ## 쓰는 법
 
 ```
+/event-kit:check      이 컴퓨터에서 돌아가는지 먼저 점검합니다
 /event-kit:setup      행사 정보를 물어 event.yml 을 만듭니다
 /event-kit:banner     현수막
 /event-kit:badge      명찰 (명단 CSV 필요)
@@ -227,7 +236,7 @@ banner:
 ministry-event-kit/
 ├─ .claude-plugin/     플러그인·마켓플레이스 매니페스트
 ├─ skills/             setup · banner · badge · landing · all
-├─ scripts/            kit.py(공통 엔진) · theme.py(색) + 생성기 3종
+├─ scripts/            kit.py(공통 엔진) · theme.py(색) · doctor.py(점검) + 생성기
 ├─ templates/          현수막 SVG 템플릿
 ├─ assets/fonts/       Pretendard 서브셋 (OFL 1.1)
 ├─ examples/           event.yml · participants.csv

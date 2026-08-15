@@ -12,6 +12,10 @@ description: 행사 현수막을 실측 인쇄 규격으로 만듭니다. 인쇄
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py" --event event.yml --out out/banner
 ```
 
+> **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
+> 먼저 `python --version` 으로 확인하세요. 아무것도 안 나오면 파이썬이 없는 것이니
+> `/event-kit:check` 로 무엇이 없는지 먼저 확인하게 하세요.
+
 `event.yml` 이 없으면 먼저 `/event-kit:setup` 으로 만드세요. 크기·마감·색만 급히 바꾸려면 `event.yml` 의 `banner:` 항목만 고치고 다시 실행하면 됩니다.
 
 ## 나오는 것
@@ -27,7 +31,10 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py" --event event.yml --out o
 
 만든 뒤 **결과를 직접 열어보고** 다음을 사용자에게 보고하세요.
 
-1. 실측 크기가 맞는지 — `pdfinfo out/banner/banner_print.pdf | grep "Page size"` (72pt = 25.4mm)
+1. 실측 크기가 맞는지 — 아래 한 줄이면 윈도우·맥 어디서나 됩니다 (`pdfinfo` 는 윈도우에 없습니다)
+   ```bash
+   python3 -c "import sys;sys.path.insert(0,r'${CLAUDE_PLUGIN_ROOT}/scripts');from kit import pdf_page_size_mm;from pathlib import Path;print(pdf_page_size_mm(Path('out/banner/banner_print.pdf')))"
+   ```
 2. 타이틀 글자 높이 — `발주안내.txt` 에 적힌 값. **1m당 3cm** 기준으로 몇 미터에서 읽히는지 함께 말해주세요
 3. 파일 용량 — 온라인 주문처는 대개 500MB 이하만 받습니다
 4. **`!` 로 시작하는 경고가 떴는지** — 강조색이 바탕과 같은 계열이거나 인쇄에서 색이 빠질 때 알려줍니다. 그냥 넘기지 말고 사용자에게 그대로 전하세요

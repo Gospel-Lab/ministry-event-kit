@@ -12,6 +12,10 @@ description: 행사 신청 랜딩페이지를 만듭니다. 구글폼 버튼이 
 python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_landing.py" --event event.yml --out out/landing
 ```
 
+> **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
+> 먼저 `python --version` 으로 확인하세요. 아무것도 안 나오면 파이썬이 없는 것이니
+> `/event-kit:check` 로 무엇이 없는지 먼저 확인하게 하세요.
+
 ## 나오는 것
 
 - `index.html` — 페이지 본체 (히어로 · 본문 · 안내 · 일정 · 신청 버튼)

@@ -29,6 +29,10 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_badges.py" \
   --event event.yml --people participants.csv --out out/badge
 ```
 
+> **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
+> 먼저 `python --version` 으로 확인하세요. 아무것도 안 나오면 파이썬이 없는 것이니
+> `/event-kit:check` 로 무엇이 없는지 먼저 확인하게 하세요.
+
 ## 나오는 것
 
 | 파일 | 쓰임 |

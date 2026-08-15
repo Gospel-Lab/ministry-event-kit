@@ -26,7 +26,39 @@ ASSETS = ROOT / "assets"
 MM_PER_IN = 25.4
 
 
+# ────────────────────────────── 콘솔 인코딩 ──────────────────────────────
+# 윈도우 명령 프롬프트는 한글 코드페이지(cp949)를 씁니다. 진행 표시에 쓰는
+# ✓ · ! 같은 문자가 cp949 에 없어서, 그냥 두면 첫 줄을 찍다가 UnicodeEncodeError
+# 로 죽습니다. 파이썬 3.15 부터는 UTF-8 이 기본이지만(PEP 686) 그 이전 버전을
+# 쓰는 컴퓨터가 훨씬 많습니다.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8", errors="replace")
+    except (AttributeError, ValueError, OSError):
+        pass          # 구버전이거나 파이프로 연결된 경우 — 그대로 둡니다
+
+
 # ────────────────────────────── 크롬 찾기 ──────────────────────────────
+def _win_chrome_candidates() -> list[str]:
+    """윈도우 설치 위치. 사용자 계정 설치와 엣지까지 포함합니다.
+
+    엣지를 넣는 이유: 윈도우에는 엣지가 반드시 깔려 있고 크롬과 같은 엔진이라
+    그대로 씁니다. 크롬을 따로 설치하지 않은 교회 컴퓨터의 실질적인 대안입니다.
+    엣지는 PATH 에 등록되지 않으므로 절대경로로 찾아야 합니다.
+    """
+    out = []
+    for var in ("PROGRAMFILES", "PROGRAMFILES(X86)", "LOCALAPPDATA"):
+        base = os.environ.get(var)
+        if not base:
+            continue
+        out += [
+            str(Path(base) / "Google/Chrome/Application/chrome.exe"),
+            str(Path(base) / "Microsoft/Edge/Application/msedge.exe"),
+            str(Path(base) / "Chromium/Application/chrome.exe"),
+        ]
+    return out
+
+
 CHROME_CANDIDATES = [
     os.environ.get("CHROME_PATH", ""),
     "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -42,7 +74,7 @@ CHROME_CANDIDATES = [
 
 
 def find_chrome() -> str:
-    for c in CHROME_CANDIDATES:
+    for c in CHROME_CANDIDATES + _win_chrome_candidates():
         if c and Path(c).exists():
             return c
     for name in ("google-chrome", "chromium", "chrome", "msedge"):
@@ -51,8 +83,10 @@ def find_chrome() -> str:
             return p
     raise SystemExit(
         "크롬을 찾지 못했습니다.\n"
-        "  · 맥/윈도우: 구글 크롬을 설치하세요 (https://google.com/chrome)\n"
-        "  · 이미 있다면 CHROME_PATH 환경변수로 실행 파일 경로를 알려주세요"
+        "  · 크롬을 설치하세요 (https://google.com/chrome)\n"
+        "  · 윈도우라면 엣지(Edge)도 그대로 쓸 수 있습니다. 보통 이미 깔려 있습니다\n"
+        "  · 이미 있다면 CHROME_PATH 환경변수로 실행 파일 경로를 알려주세요\n"
+        "  · 무엇이 없는지 한 번에 보려면: python scripts/doctor.py"
     )
 
 
@@ -64,7 +98,28 @@ def find_ghostscript() -> str | None:
     for c in ("/opt/homebrew/bin/gs", "/usr/local/bin/gs"):
         if Path(c).exists():
             return c
+    # 윈도우: winget 으로 막 설치하면 PATH 반영 전이라 which 가 실패합니다
+    for var in ("PROGRAMFILES", "PROGRAMFILES(X86)"):
+        base = os.environ.get(var)
+        if not base:
+            continue
+        for exe in sorted(Path(base).glob("gs/gs*/bin/gswin*c.exe"), reverse=True):
+            return str(exe)
     return None
+
+
+def pdf_page_size_mm(pdf: Path) -> tuple[float, float] | None:
+    """PDF 첫 쪽의 실제 크기(mm). pdfinfo 가 없는 윈도우에서도 확인할 수 있게
+    /MediaBox 를 직접 읽습니다. 1pt = 1/72인치."""
+    try:
+        head = pdf.read_bytes()[:400_000]
+    except OSError:
+        return None
+    m = re.search(rb"/MediaBox\s*\[\s*([\d.+-]+)\s+([\d.+-]+)\s+([\d.+-]+)\s+([\d.+-]+)", head)
+    if not m:
+        return None
+    x0, y0, x1, y1 = (float(v) for v in m.groups())
+    return (abs(x1 - x0) / 72 * MM_PER_IN, abs(y1 - y0) / 72 * MM_PER_IN)
 
 
 # ────────────────────────────── 템플릿 채우기 ──────────────────────────────
