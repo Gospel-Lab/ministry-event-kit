@@ -106,6 +106,7 @@
       >{{TITLE_HEAD}}<tspan fill="url(#accent)">{{TITLE_ACCENT}}</tspan></text>
   </g>
 
-  <!-- 부제 (있을 때만) -->
+  <!-- 부제 · 날짜/장소 (있을 때만) -->
   {{SUBTITLE_BLOCK}}
+  {{META_BLOCK}}
 </svg>

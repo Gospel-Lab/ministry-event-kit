@@ -17,6 +17,8 @@ banner:
   finish: 봉미싱                    # 봉미싱 / 막대가공 / 족자 / 금속링 / 고무 / 사방미싱 / 없음
   accent_word: 수련회               # 제목 끝의 이 단어만 다른 색으로
   subtitle: 함께 걷는 사흘
+  show_dates: true                 # 날짜·장소를 현수막에 넣을지
+                                   # false 로 두면 연도가 없어 다음 해에도 그대로 씁니다
 
 badge:
   width_mm: 93
