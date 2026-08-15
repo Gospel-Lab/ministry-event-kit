@@ -24,6 +24,9 @@ def build(ev: dict, outdir: Path) -> Path:
     la = tk["landing"]
     # 강조색(신청 버튼·머리말)은 현수막·명찰과 같은 값을 씁니다
     gold = tk["accent"]["chip"][1]
+    ts = tk["brief"]["type_scale"]          # 대상별 본문 글자 배율
+    def z(v):                               # 배율이 1이면 값이 그대로 남습니다
+        return f"{round(v * ts, 2):g}"
     outdir.mkdir(parents=True, exist_ok=True)
     copy_fonts(outdir)
 
@@ -82,7 +85,7 @@ def build(ev: dict, outdir: Path) -> Path:
   }}
   * {{ box-sizing:border-box; }}
   body {{ margin:0; background:var(--paper); color:var(--ink);
-    font-family:var(--sans); font-size:17px; line-height:1.8;
+    font-family:var(--sans); font-size:{z(17)}px; line-height:1.8;
     -webkit-font-smoothing:antialiased; padding-bottom:86px; }}
   @media (min-width:768px) {{ body {{ padding-bottom:0; }} }}
   .wrap {{ max-width:660px; margin:0 auto; padding:0 22px; }}
@@ -98,11 +101,11 @@ def build(ev: dict, outdir: Path) -> Path:
   .hero .wrap {{ position:relative; }}
   .hero h1 {{ margin:0 0 14px; font-size:clamp(31px,8vw,46px); font-weight:900;
     letter-spacing:-.035em; line-height:1.16; }}
-  .hero p {{ margin:0 0 26px; color:var(--hero); font-size:18px; max-width:28em; }}
+  .hero p {{ margin:0 0 26px; color:var(--hero); font-size:{z(18)}px; max-width:28em; }}
   .hero .when {{ display:inline-flex; flex-wrap:wrap; gap:6px 16px; padding:13px 0;
     border-top:1px solid rgba(255,255,255,.24); border-bottom:1px solid rgba(255,255,255,.24);
     font-variant-numeric:tabular-nums; }}
-  .hero .when b {{ font-size:19px; font-weight:800; }}
+  .hero .when b {{ font-size:{z(19)}px; font-weight:800; }}
   .hero .when span {{ color:var(--hero2); }}
 
   .letter p {{ margin:0 0 1.4em; }}
@@ -111,18 +114,18 @@ def build(ev: dict, outdir: Path) -> Path:
   .info .row {{ display:grid; grid-template-columns:88px minmax(0,1fr); gap:14px;
     padding:13px 0; border-top:1px solid var(--rule); }}
   .info .row:first-of-type {{ border-top:0; }}
-  .info .k {{ color:var(--ink3); font-size:14.5px; font-weight:700; padding-top:.15em; }}
+  .info .k {{ color:var(--ink3); font-size:{z(14.5)}px; font-weight:700; padding-top:.15em; }}
   .info .v {{ font-variant-numeric:tabular-nums; }}
 
   .day {{ background:#fff; border:1px solid var(--rule); border-left:4px solid var(--mid);
     border-radius:6px; padding:16px 18px; margin-bottom:12px; }}
   .day h3 {{ margin:0 0 8px; font-size:16px; font-weight:800; color:var(--deep); }}
   .sr {{ display:grid; grid-template-columns:64px minmax(0,1fr); gap:12px;
-    padding:5px 0; font-size:16px; }}
+    padding:5px 0; font-size:{z(16)}px; }}
   .sr .t {{ color:var(--mid); font-weight:700; font-variant-numeric:tabular-nums; }}
 
   .cta {{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%;
-    background:var(--gold); color:{la["ink"]}; font-size:18px; font-weight:800;
+    background:var(--gold); color:{la["ink"]}; font-size:{z(18)}px; font-weight:800;
     text-decoration:none; padding:19px 22px; border-radius:5px;
     transition:filter .12s ease, transform .12s ease; }}
   .cta:hover {{ filter:brightness(1.05); transform:translateY(-1px); }}

@@ -236,6 +236,84 @@ def derive(base_hex: str) -> dict:
 
 
 # ─────────────────────────────────────────────────────────────
+# 행사 성격 → 디자인
+#   근거와 출처는 docs/design-rules.md 에 정리해 두었습니다.
+#   여기에는 결과 수치만 둡니다.
+# ─────────────────────────────────────────────────────────────
+
+# 대상. type_scale 은 본문 글자 배율입니다.
+AUDIENCE = {
+    "어린이":   dict(type_scale=1.06, prefer=["wine", "plum"], accent="gold",
+                     motif="dots", note="밝은 배경이 필요한 대상입니다"),
+    "청소년":   dict(type_scale=1.00, prefer=["plum", "wine"], accent="gold",
+                     motif="circuit"),
+    "청년":     dict(type_scale=1.00, prefer=["navy", "plum"], accent="gold",
+                     motif="circuit", layout="split"),
+    "장년":     dict(type_scale=1.08, prefer=["navy", "forest"], accent="gold",
+                     motif="grid"),
+    # 대비 감도가 40세부터 떨어져 80세에는 최대 83% 낮아집니다.
+    # 글자를 키우는 것보다 대비를 높이는 것이 먼저입니다.
+    "어르신":   dict(type_scale=1.15, prefer=["navy", "forest"], accent="gold",
+                     motif="grid", contrast=True),
+    "전교인":   dict(type_scale=1.08, prefer=["plum", "navy"], accent="gold",
+                     motif="circuit"),
+    "외부초청": dict(type_scale=1.08, prefer=["navy", "slate"], accent="gold",
+                     motif="grid", cta=True),
+}
+AUDIENCE_ALIAS = {"어른": "장년", "성인": "장년", "노인": "어르신", "시니어": "어르신",
+                  "유치부": "어린이", "유년부": "어린이", "초등": "어린이",
+                  "중고등": "청소년", "학생": "청소년", "새가족": "외부초청",
+                  "전교인 대상": "전교인", "온세대": "전교인"}
+
+MOOD = {
+    "경건": dict(prefer=["navy", "plum"],   accent="gold",   motif="grid"),
+    "활기": dict(prefer=["wine", "plum"],   accent="gold",   motif="circuit"),
+    "따뜻": dict(prefer=["clay", "wine"],   accent="gold",   motif="dots"),
+    "장중": dict(prefer=["navy", "slate"],  accent="silver", motif="plain"),
+}
+MOOD_ALIAS = {"차분": "경건", "엄숙": "장중", "신나는": "활기", "밝은": "활기",
+              "포근": "따뜻", "정중": "장중"}
+
+FORMALITY = {"격식": 1.10, "보통": 1.00, "편안": 0.94}   # 여백 배율
+
+
+def brief_of(ev: dict) -> dict:
+    """event.yml 의 brief 를 읽어 실제로 쓸 값으로 정리합니다.
+
+    brief 가 없으면 전부 중립값입니다. 즉 지금까지의 결과물이 그대로 나옵니다.
+    """
+    b = ev.get("brief") or {}
+    if not isinstance(b, dict):
+        b = {}
+    aud = str(b.get("audience") or "").strip()
+    aud = AUDIENCE_ALIAS.get(aud, aud)
+    mood = str(b.get("mood") or "").strip()
+    mood = MOOD_ALIAS.get(mood, mood)
+    form = str(b.get("formality") or "보통").strip()
+
+    a = AUDIENCE.get(aud, {})
+    m = MOOD.get(mood, {})
+    return {
+        "audience": aud if aud in AUDIENCE else "",
+        "mood": mood if mood in MOOD else "",
+        "formality": form if form in FORMALITY else "보통",
+        # 글자 배율 — 명찰과 랜딩페이지 본문에 걸립니다
+        "type_scale": float(a.get("type_scale", 1.0)),
+        "space": FORMALITY.get(form, 1.0),
+        "contrast": bool(a.get("contrast")),
+        "cta": bool(a.get("cta")),
+        # 아무것도 정하지 않았을 때 채울 값
+        # 색 묶음은 대상이 먼저입니다 — 가독성이 분위기보다 앞섭니다.
+        # 강조색과 무늬는 분위기가 먼저입니다 — 그쪽이 톤을 만듭니다.
+        "prefer": a.get("prefer") or m.get("prefer") or [],
+        "accent": m.get("accent") or a.get("accent") or "",
+        "motif": m.get("motif") or a.get("motif") or "",
+        "layout": a.get("layout") or "",
+        "note": a.get("note", ""),
+    }
+
+
+# ─────────────────────────────────────────────────────────────
 # 바깥에서 부르는 곳
 # ─────────────────────────────────────────────────────────────
 
@@ -253,9 +331,14 @@ def resolve(ev: dict, warn=None) -> dict:
     colors = brand.get("colors") or {}
     if not isinstance(colors, dict):
         colors = {}
+    bf = brief_of(ev)
 
     base_hex = str(colors.get("base") or colors.get("bg") or "").strip()
-    pal_name = str(brand.get("palette") or "plum").strip()
+    # 직접 정한 값이 항상 이깁니다. brief 는 비어 있는 자리만 채웁니다.
+    pal_name = str(brand.get("palette") or "").strip()
+    if not pal_name and not base_hex and bf["prefer"]:
+        pal_name = bf["prefer"][0]
+    pal_name = pal_name or "plum"
 
     # ── 바탕색 ──
     if base_hex:
@@ -288,6 +371,8 @@ def resolve(ev: dict, warn=None) -> dict:
 
     # ── 강조색 ──
     acc_name = str(brand.get("accent") or colors.get("accent") or "").strip()
+    if not acc_name and not base_hex:
+        acc_name = bf["accent"]
     if acc_name.startswith("#"):
         acc = accent_tokens(acc_name)
         acc_label = "직접 지정"
@@ -312,4 +397,5 @@ def resolve(ev: dict, warn=None) -> dict:
     tok["accent"] = acc
     tok["accent_label"] = acc_label
     tok["palette_label"] = pal_label
+    tok["brief"] = bf
     return tok

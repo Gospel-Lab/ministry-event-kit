@@ -7,6 +7,14 @@ dates: 2026. 8. 3.(월) ~ 8. 5.(수)
 place: 가평 수양관
 contact: 010-0000-0000
 
+# 행사 성격 — 이 세 줄만 적으면 색·글자 크기·배치가 알아서 정해집니다.
+# 아래 brand 나 banner 에서 직접 정한 값이 있으면 그쪽이 항상 이깁니다.
+# 근거와 전체 표는 docs/design-rules.md 를 보세요.
+brief:
+  audience: 전교인       # 어린이 / 청소년 / 청년 / 장년 / 어르신 / 전교인 / 외부초청
+  mood: 활기             # 경건 / 활기 / 따뜻 / 장중
+  formality: 보통        # 격식 / 보통 / 편안
+
 brand:
   palette: plum                    # plum(보라) navy(남색) forest(녹색) wine(자주) slate(청회색) clay(황토)
   accent: gold                     # 강조색만 따로 고릅니다

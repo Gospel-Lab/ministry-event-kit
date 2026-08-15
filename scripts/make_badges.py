@@ -33,6 +33,11 @@ def role_style(role: str, th: dict):
     return ("transparent", th["role"])
 
 
+def z(v: float, th: dict) -> str:
+    """글자 크기에 대상별 배율을 곱합니다. 배율이 1이면 값이 그대로 남습니다."""
+    return f"{round(v * th.get('ts', 1.0), 2):g}"
+
+
 def css(font_prefix: str, th: dict) -> str:
     return f"""
   {font_css(font_prefix)}
@@ -74,15 +79,15 @@ def css(font_prefix: str, th: dict) -> str:
     border-bottom-left-radius:5cqw; border-bottom-right-radius:5cqw; }}
   .header::after {{ content:""; position:absolute; inset:0;
     background:radial-gradient(ellipse 70% 60% at 22% 0%, rgba(255,255,255,.26), transparent 60%); }}
-  .org {{ position:relative; font-size:3.2cqw; font-weight:700; letter-spacing:.13em; color:{th["org"]}; }}
-  .ev {{ position:relative; font-size:4.6cqw; font-weight:800; letter-spacing:-.02em; margin-top:1.2cqw; }}
+  .org {{ position:relative; font-size:{z(3.2,th)}cqw; font-weight:700; letter-spacing:.13em; color:{th["org"]}; }}
+  .ev {{ position:relative; font-size:{z(4.6,th)}cqw; font-weight:800; letter-spacing:-.02em; margin-top:1.2cqw; }}
   .gold {{ height:.6cqw; flex:none;
     background:linear-gradient(90deg,transparent,{th["bar1"]} 22%,{th["bar2"]} 50%,{th["bar1"]} 78%,transparent); }}
   .body {{ flex:1; display:flex; flex-direction:column; align-items:center;
     justify-content:center; gap:2.4cqw; padding:3cqw 4.5cqw; text-align:center; }}
   .name {{ font-weight:900; letter-spacing:-.05em; line-height:1; white-space:nowrap; color:{th["ink"]}; }}
-  .belong {{ font-size:4cqw; color:{th["ink2"]}; letter-spacing:-.01em; }}
-  .role {{ display:inline-block; font-size:3.2cqw; font-weight:800; letter-spacing:.1em;
+  .belong {{ font-size:{z(4,th)}cqw; color:{th["ink2"]}; letter-spacing:-.01em; }}
+  .role {{ display:inline-block; font-size:{z(3.2,th)}cqw; font-weight:800; letter-spacing:.1em;
     padding:1.2cqw 3.8cqw; border-radius:99cqw; margin-top:.4cqw; }}
   .tail {{ flex:none; padding:0 5cqw 4.4cqw; }}
   .band {{ height:1.3cqw; border-radius:99cqw;
@@ -97,24 +102,24 @@ def css(font_prefix: str, th: dict) -> str:
   .pill {{ display:inline-flex; align-items:baseline; gap:1.2cqw; white-space:nowrap;
     background:linear-gradient(120deg,{th["deep"]},{th["mid"]}); color:#fff;
     border-radius:99cqw; padding:.6cqw 2.2cqw; }}
-  .pill b {{ font-size:3.7cqw; font-weight:800; letter-spacing:-.02em; }}
+  .pill b {{ font-size:{z(3.7,th)}cqw; font-weight:800; letter-spacing:-.02em; }}
   .r {{ display:grid; grid-template-columns:4.4cqw 11cqw minmax(0,1fr); gap:1.2cqw;
     align-items:center; padding:.15cqw 0; }}
   .no {{ width:4.4cqw; height:4.4cqw; border-radius:50%; background:#fff;
-    border:.22cqw solid rgba({th["tint"]},.3); color:{th["deep"]}; font-size:2.75cqw;
+    border:.22cqw solid rgba({th["tint"]},.3); color:{th["deep"]}; font-size:{z(2.75,th)}cqw;
     font-weight:800; display:flex; align-items:center; justify-content:center; line-height:1; }}
-  .t {{ font-size:3.5cqw; font-weight:700; color:{th["role"]};
+  .t {{ font-size:{z(3.5,th)}cqw; font-weight:700; color:{th["role"]};
     font-variant-numeric:tabular-nums; letter-spacing:-.03em; }}
-  .s {{ font-size:3.8cqw; font-weight:600; color:{th["ink"]}; line-height:1.1; letter-spacing:-.03em; }}
+  .s {{ font-size:{z(3.8,th)}cqw; font-weight:600; color:{th["ink"]}; line-height:1.1; letter-spacing:-.03em; }}
   .foot {{ flex:none; margin-top:.9cqw; padding-top:.8cqw; border-top:1px solid {th["rule"]};
-    font-size:2.9cqw; color:{th["ink3"]}; display:flex; justify-content:space-between; gap:1.4cqw; }}
+    font-size:{z(2.9,th)}cqw; color:{th["ink3"]}; display:flex; justify-content:space-between; gap:1.4cqw; }}
   .foot b {{ color:{th["ink"]}; }}
 """
 
 
-def name_size(name: str) -> str:
+def name_size(name: str, th: dict) -> str:
     n = len([c for c in name if not c.isspace()])
-    return {1: "26cqw", 2: "26cqw", 3: "24cqw", 4: "18cqw"}.get(n, "15cqw")
+    return z({1: 26, 2: 26, 3: 24, 4: 18}.get(n, 15), th) + "cqw"
 
 
 def front_card(ev: dict, person: dict, th: dict) -> str:
@@ -133,7 +138,7 @@ def front_card(ev: dict, person: dict, th: dict) -> str:
       <div class="ev">{esc(ev.get('title',''))}</div></div>
     <div class="gold"></div>
     <div class="body">
-      <div class="name" style="font-size:{name_size(person.get('이름') or person.get('name') or '')}">{esc(person.get('이름') or person.get('name') or '')}</div>
+      <div class="name" style="font-size:{name_size(person.get('이름') or person.get('name') or '', th)}">{esc(person.get('이름') or person.get('name') or '')}</div>
       {f'<div class="belong">{esc(belong)}</div>' if belong else ''}
       {role_html}
     </div>
@@ -204,7 +209,14 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
     th = {**tk["badge"],
           "chip1": acc["chip"][0], "chip2": acc["chip"][1],
           "bar1": acc["bar"][0], "bar2": acc["bar"][1],
-          "org": acc["org"], "line": acc["line"]}
+          "org": acc["org"], "line": acc["line"],
+          "ts": tk["brief"]["type_scale"]}
+    bf = tk["brief"]
+    brief_note = ""
+    if bf["audience"]:
+        brief_note = f"  ({bf['audience']} 대상 — 글자를 {bf['type_scale']:.0%} 로 맞췄습니다)"
+        if bf["audience"] == "어르신":
+            brief_note += "\n              문헌 권장은 12pt 이상입니다. 더 키우려면 일정 항목을 줄이세요."
     w = float(b.get("width_mm", 93))
     h = float(b.get("height_mm", 124))
     outdir.mkdir(parents=True, exist_ok=True)
@@ -259,6 +271,7 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
 완성 규격 : {w:.0f} × {h:.0f} mm (세로형)
 인원      : {len(people)}명
 용지      : 아트지 200~250g · 무광 코팅 (유광은 조명이 반사돼 이름이 안 보입니다)
+일정표 글자 : 약 {w * float(z(3.8, th)) / 100 / 25.4 * 72:.1f}pt{brief_note}
 색상      : CMYK · 300dpi 권장
 
 파일 쓰임
