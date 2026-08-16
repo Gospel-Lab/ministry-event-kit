@@ -326,14 +326,28 @@ def _set_deep(tree, key, value):
 
 
 # ────────────────────────────── 렌더링 ──────────────────────────────
-def html_to_pdf(html_path: Path, pdf_path: Path, timeout: int = 90) -> Path:
-    """@page 크기를 그대로 지키는 실측 PDF를 만듭니다."""
+def html_to_pdf(html_path: Path, pdf_path: Path, timeout: int | None = None,
+                pages: int = 1) -> Path:
+    """@page 크기를 그대로 지키는 실측 PDF를 만듭니다.
+
+    pages 는 예상 쪽수입니다. 시간은 파일 크기가 아니라 쪽수를 따라갑니다 —
+    명찰 500명(500쪽)은 실측 2분이 걸려서, 고정 90초로는 500명 행사에서
+    반드시 실패합니다. 쪽수에 맞춰 기다리는 시간을 늘립니다.
+    """
+    if timeout is None:
+        timeout = max(90, int(40 + pages * 1.8))
     chrome = find_chrome()
     pdf_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = [chrome, "--headless=new", "--disable-gpu", "--no-sandbox",
            "--no-pdf-header-footer", "--virtual-time-budget=8000",
            f"--print-to-pdf={pdf_path}", str(html_path)]
-    r = subprocess.run(cmd, capture_output=True, timeout=timeout)
+    try:
+        r = subprocess.run(cmd, capture_output=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise SystemExit(
+            f"PDF 를 만드는 데 {timeout}초를 넘겼습니다 ({pages}쪽).\n"
+            f"  · 인원이나 항목을 나눠서 두 번에 만들어 보세요\n"
+            f"  · 다른 무거운 프로그램을 닫으면 빨라집니다") from None
     if not pdf_path.exists() or pdf_path.stat().st_size == 0:
         raise SystemExit(f"PDF 생성 실패:\n{r.stderr.decode('utf-8', 'ignore')[-800:]}")
     return pdf_path

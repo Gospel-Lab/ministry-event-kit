@@ -33,11 +33,12 @@ import re
 
 
 def hex2hsl(h: str) -> tuple[float, float, float]:
-    h = h.strip().lstrip("#")
+    raw = h.strip()
+    h = raw.lstrip("#")
     if len(h) == 3:
         h = "".join(c * 2 for c in h)
     if not re.fullmatch(r"[0-9a-fA-F]{6}", h):
-        raise ValueError(f"색 표기가 잘못됐습니다: #{h} (예: #0a2f3a)")
+        raise ValueError(f"색 표기가 잘못됐습니다: {raw!r}")
     r, g, b = (int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
     hh, ll, ss = colorsys.rgb_to_hls(r, g, b)
     return hh * 360, ss, ll
@@ -334,6 +335,16 @@ def resolve(ev: dict, warn=None) -> dict:
     bf = brief_of(ev)
 
     base_hex = str(colors.get("base") or colors.get("bg") or "").strip()
+    # 색 코드가 잘못돼 있으면 멈추지 않고 알려준 뒤 준비된 색으로 갑니다.
+    # 여기서 예외를 그대로 두면 오타 한 글자에 파이썬 추적이 뜹니다.
+    if base_hex:
+        try:
+            hex2hsl(base_hex)
+        except ValueError as e:
+            if warn:
+                warn(f"{e} — brand.colors.base 를 무시하고 준비된 색으로 진행합니다. "
+                     f"색은 #rrggbb 여섯 자리로 적어 주세요 (예: \"#0a2f3a\")")
+            base_hex = ""
     # 직접 정한 값이 항상 이깁니다. brief 는 비어 있는 자리만 채웁니다.
     pal_name = str(brand.get("palette") or "").strip()
     if not pal_name and not base_hex and bf["prefer"]:
@@ -371,6 +382,13 @@ def resolve(ev: dict, warn=None) -> dict:
 
     # ── 강조색 ──
     acc_name = str(brand.get("accent") or colors.get("accent") or "").strip()
+    if acc_name.startswith("#"):
+        try:
+            hex2hsl(acc_name)
+        except ValueError as e:
+            if warn:
+                warn(f"{e} — 강조색을 금색으로 대신합니다.")
+            acc_name = ""
     if not acc_name and not base_hex:
         acc_name = bf["accent"]
     if acc_name.startswith("#"):

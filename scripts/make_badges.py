@@ -270,10 +270,16 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
   .badge:last-child {{ page-break-after:auto; }}
 """
     cards = [front_card(ev, p, th) for p in people]
+    if len(cards) >= 150:
+        info(f"{len(cards)}명이라 PDF 만드는 데 몇 분 걸립니다. 그대로 두세요")
     f1 = outdir / "_front.html"
     f1.write_text(page_doc("명찰 앞면", one, cards, "", th), encoding="utf-8")
-    pdf1 = html_to_pdf(f1, outdir / "badges_print.pdf")
-    ok(f"badges_print.pdf   {len(people)}명 · 한 장에 한 명 ({w:.0f}×{h:.0f}mm)")
+    pdf1 = html_to_pdf(f1, outdir / "badges_print.pdf", pages=len(cards))
+    mb1 = pdf1.stat().st_size / 1048576
+    ok(f"badges_print.pdf   {len(people)}명 · 한 장에 한 명 ({w:.0f}×{h:.0f}mm, {mb1:.0f}MB)")
+    if mb1 > 50:
+        warn(f"파일이 {mb1:.0f}MB 입니다. 인쇄소 업로드 한도(보통 50~500MB)를 "
+             f"넘는지 확인하고, 넘으면 명단을 나눠 두 번에 만드세요")
 
     # ② 뒷면 일정표 (공통 1장)
     f2 = outdir / "_back.html"
@@ -299,7 +305,7 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
 """
         f3 = outdir / "_a4.html"
         f3.write_text(page_doc("명찰 A4 배치", style, pages, "", th), encoding="utf-8")
-        html_to_pdf(f3, outdir / "badges_A4.pdf")
+        html_to_pdf(f3, outdir / "badges_A4.pdf", pages=len(pages))
         sheets = (len(cards) + per - 1) // per
         ok(f"badges_A4.pdf      A4 {sheets}장 (한 장에 4개, 점선은 자르는 선)")
 
