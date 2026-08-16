@@ -193,12 +193,53 @@ def page_doc(title: str, style_extra: str, cards: list[str], font_prefix: str, t
 <body>{''.join(cards)}</body></html>"""
 
 
+NAME_KEYS = ("이름", "성명", "name", "Name")
+
+
 def read_people(path: Path) -> list[dict]:
-    with path.open(encoding="utf-8-sig", newline="") as f:
-        rows = [r for r in csv.DictReader(f) if any((v or "").strip() for v in r.values())]
+    """명단 CSV를 읽습니다.
+
+    인코딩을 차례로 시도합니다. 한국 윈도우의 엑셀에서 '다른 이름으로 저장 → CSV'
+    를 하면 UTF-8 이 아니라 cp949(euc-kr)로 저장됩니다. 교회에서 만드는 명단은
+    거의 그 경로로 나오므로, UTF-8 만 읽으면 대부분의 실제 명단이 열리지 않습니다.
+    """
+    if not path.exists():
+        raise SystemExit(f"{path} 명단 파일이 없습니다.\n"
+                         f"  첫 줄에 '이름,소속,역할' 을 적고 그 아래에 한 줄씩 적어 주세요.")
+
+    raw = path.read_bytes()
+    text = used = None
+    for enc in ("utf-8-sig", "cp949", "euc-kr", "utf-16"):
+        try:
+            text = raw.decode(enc)
+            used = enc
+            break
+        except (UnicodeDecodeError, UnicodeError):
+            continue
+    if text is None:
+        raise SystemExit(
+            f"{path.name} 의 글자 인코딩을 알 수 없습니다.\n"
+            f"  엑셀에서 [다른 이름으로 저장] → 형식을 'CSV UTF-8' 로 고르면 해결됩니다.")
+
+    lines = text.splitlines()
+    header = next(iter(csv.reader(lines)), [])
+    # 머리글 없이 바로 사람 이름부터 적은 경우 — 첫 사람이 머리글로 먹혀 사라집니다.
+    # 이걸 "비어 있다"고만 말하면 원인을 못 찾습니다.
+    if header and not any(h.strip() in NAME_KEYS for h in header):
+        raise SystemExit(
+            f"{path.name} 의 첫 줄이 머리글로 보이지 않습니다.\n"
+            f"  지금 첫 줄: {', '.join(h.strip() for h in header[:3])}\n"
+            f"  맨 위에 '이름,소속,역할' 한 줄을 넣어 주세요.\n"
+            f"  그 줄이 없으면 첫 사람이 머리글로 읽혀 명단에서 빠집니다.")
+
+    rows = [r for r in csv.DictReader(lines)
+            if any((v or "").strip() for v in r.values())]
     if not rows:
-        raise SystemExit("명단이 비어 있습니다. 첫 줄은 머리글(이름,소속,역할)이어야 합니다.")
-    return rows
+        raise SystemExit(
+            f"{path.name} 에서 사람을 한 명도 못 찾았습니다.\n"
+            f"  머리글 아래에 한 줄씩 적어 주세요.  예) 김은혜,1교구,참가자")
+
+    return rows, used
 
 
 def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
@@ -229,10 +270,16 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
   .badge:last-child {{ page-break-after:auto; }}
 """
     cards = [front_card(ev, p, th) for p in people]
+    if len(cards) >= 150:
+        info(f"{len(cards)}명이라 PDF 만드는 데 몇 분 걸립니다. 그대로 두세요")
     f1 = outdir / "_front.html"
     f1.write_text(page_doc("명찰 앞면", one, cards, "", th), encoding="utf-8")
-    pdf1 = html_to_pdf(f1, outdir / "badges_print.pdf")
-    ok(f"badges_print.pdf   {len(people)}명 · 한 장에 한 명 ({w:.0f}×{h:.0f}mm)")
+    pdf1 = html_to_pdf(f1, outdir / "badges_print.pdf", pages=len(cards))
+    mb1 = pdf1.stat().st_size / 1048576
+    ok(f"badges_print.pdf   {len(people)}명 · 한 장에 한 명 ({w:.0f}×{h:.0f}mm, {mb1:.0f}MB)")
+    if mb1 > 50:
+        warn(f"파일이 {mb1:.0f}MB 입니다. 인쇄소 업로드 한도(보통 50~500MB)를 "
+             f"넘는지 확인하고, 넘으면 명단을 나눠 두 번에 만드세요")
 
     # ② 뒷면 일정표 (공통 1장)
     f2 = outdir / "_back.html"
@@ -258,7 +305,7 @@ def build(ev: dict, people: list[dict], outdir: Path, a4: bool = True) -> None:
 """
         f3 = outdir / "_a4.html"
         f3.write_text(page_doc("명찰 A4 배치", style, pages, "", th), encoding="utf-8")
-        html_to_pdf(f3, outdir / "badges_A4.pdf")
+        html_to_pdf(f3, outdir / "badges_A4.pdf", pages=len(pages))
         sheets = (len(cards) + per - 1) // per
         ok(f"badges_A4.pdf      A4 {sheets}장 (한 장에 4개, 점선은 자르는 선)")
 
@@ -294,7 +341,9 @@ def main() -> None:
     ap.add_argument("--no-a4", action="store_true", help="A4 배치본을 만들지 않음")
     a = ap.parse_args()
     ev = load_event(a.event)
-    people = read_people(Path(a.people))
+    people, enc = read_people(Path(a.people))
+    if enc not in ("utf-8-sig", "utf-8"):
+        info(f"명단을 {enc} 로 읽었습니다 (윈도우 엑셀에서 저장한 파일)")
     info(f"행사: {ev.get('title')} · 명단 {len(people)}명")
     build(ev, people, Path(a.out), a4=not a.no_a4)
     print(f"\n완료 → {Path(a.out).resolve()}")

@@ -292,10 +292,17 @@ def build(ev: dict, outdir: Path) -> None:
         "HALO_CX": halo_cx, "HALO_CY": round(t_base - t_size * 0.35, 1),
         "HALO_RX": round(trim_w * 0.25, 1), "HALO_RY": round(trim_h * 0.32, 1),
         "T_TOP": round(t_base - t_size * 0.78, 1), "T_BOT": round(t_base + t_size * 0.05, 1),
-        "GRID_LAYER": grid_layer, "MOTIF": motif_svg, "CONTENT": "\n".join(parts),
     }
+    # 배경 조각에도 {{FULL_W}} 같은 자리가 있습니다. 그 조각들을 먼저 채워서
+    # 템플릿 채우기를 딱 한 번만 돌립니다.
+    # 두 번 돌리면 행사 이름에 {{...}} 가 들어 있을 때 그것까지 치환됩니다
+    # (예: "{{FULL_W}}주년" → "1260.0주년"). 사용자가 적은 글자는 건드리면 안 됩니다.
+    v["GRID_LAYER"] = fill(grid_layer, v)
+    v["MOTIF"] = fill(motif_svg, v)
+    v["CONTENT"] = "\n".join(parts)
+
     tpl = (TEMPLATES / "banner.svg.tpl").read_text(encoding="utf-8")
-    svg = fill(fill(tpl, v), v)          # 무늬 안에 남은 {{FULL_W}} 등을 한 번 더 채웁니다
+    svg = fill(tpl, v)
     svg_path = outdir / "banner.svg"
     svg_path.write_text(svg, encoding="utf-8")
     ok(f"SVG 마스터  {svg_path.name}  ({tk['palette_label']} · {tk['accent_label']} · {layout})")

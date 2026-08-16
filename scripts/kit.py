@@ -147,14 +147,48 @@ def load_event(path: str | Path) -> dict:
     (key: value / 2단 들여쓰기 / - 목록 / # 주석).
     """
     p = Path(path)
+    if not p.exists():
+        raise SystemExit(
+            f"{p} 파일이 없습니다.\n"
+            f"  · 행사 정보 파일을 먼저 만드세요 (/event-kit:setup)\n"
+            f"  · 파일이 다른 폴더에 있다면 --event 뒤에 그 경로를 적어 주세요")
     raw = p.read_text(encoding="utf-8")
     if p.suffix.lower() == ".json":
         return json.loads(raw)
     try:
         import yaml  # type: ignore
-        return yaml.safe_load(raw) or {}
     except ImportError:
         return _mini_yaml(raw)
+    try:
+        return yaml.safe_load(raw) or {}
+    except yaml.YAMLError as e:                  # noqa: PERF203
+        raise SystemExit(_yaml_help(p, raw, e)) from None
+
+
+def _yaml_help(path: Path, raw: str, err) -> str:
+    """문법 오류를 사람이 고칠 수 있는 말로 바꿉니다.
+
+    그냥 두면 파이썬 추적(traceback) 20줄이 그대로 뜹니다.
+    디자인 도구도 못 다루는 분이 쓰는 도구에서 그것은 막다른 길입니다.
+    """
+    mark = getattr(err, "problem_mark", None)
+    out = [f"{path.name} 을 읽지 못했습니다 — 문법이 맞지 않습니다.", ""]
+    if mark is not None:
+        lines = raw.splitlines()
+        n = mark.line                            # 0부터 셉니다
+        for i in range(max(0, n - 1), min(len(lines), n + 2)):
+            head = "→" if i == n else " "
+            out.append(f"  {head} {i + 1:>3} | {lines[i]}")
+        out.append(f"        {' ' * (mark.column + 4)}^  이 부근")
+    out += [
+        "",
+        "자주 나오는 원인",
+        '  · 값에 : 나 # 나 따옴표가 들어 있으면 값 전체를 "큰따옴표"로 감싸세요',
+        '        title: "특별새벽기도: 다시 시작"',
+        "  · 들여쓰기는 공백으로만 합니다. 탭(Tab)은 오류가 납니다",
+        "  · 목록은 - 뒤에 공백을 한 칸 둡니다",
+    ]
+    return "\n".join(out)
 
 
 def _strip_comment(s: str) -> str:
@@ -292,14 +326,28 @@ def _set_deep(tree, key, value):
 
 
 # ────────────────────────────── 렌더링 ──────────────────────────────
-def html_to_pdf(html_path: Path, pdf_path: Path, timeout: int = 90) -> Path:
-    """@page 크기를 그대로 지키는 실측 PDF를 만듭니다."""
+def html_to_pdf(html_path: Path, pdf_path: Path, timeout: int | None = None,
+                pages: int = 1) -> Path:
+    """@page 크기를 그대로 지키는 실측 PDF를 만듭니다.
+
+    pages 는 예상 쪽수입니다. 시간은 파일 크기가 아니라 쪽수를 따라갑니다 —
+    명찰 500명(500쪽)은 실측 2분이 걸려서, 고정 90초로는 500명 행사에서
+    반드시 실패합니다. 쪽수에 맞춰 기다리는 시간을 늘립니다.
+    """
+    if timeout is None:
+        timeout = max(90, int(40 + pages * 1.8))
     chrome = find_chrome()
     pdf_path.parent.mkdir(parents=True, exist_ok=True)
     cmd = [chrome, "--headless=new", "--disable-gpu", "--no-sandbox",
            "--no-pdf-header-footer", "--virtual-time-budget=8000",
            f"--print-to-pdf={pdf_path}", str(html_path)]
-    r = subprocess.run(cmd, capture_output=True, timeout=timeout)
+    try:
+        r = subprocess.run(cmd, capture_output=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        raise SystemExit(
+            f"PDF 를 만드는 데 {timeout}초를 넘겼습니다 ({pages}쪽).\n"
+            f"  · 인원이나 항목을 나눠서 두 번에 만들어 보세요\n"
+            f"  · 다른 무거운 프로그램을 닫으면 빨라집니다") from None
     if not pdf_path.exists() or pdf_path.stat().st_size == 0:
         raise SystemExit(f"PDF 생성 실패:\n{r.stderr.decode('utf-8', 'ignore')[-800:]}")
     return pdf_path
