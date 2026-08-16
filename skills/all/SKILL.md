@@ -1,4 +1,5 @@
 ---
+name: event-kit-all
 description: 현수막·명찰·랜딩페이지를 한 번에 만듭니다. 행사 준비를 통째로 맡길 때, "행사 자료 전부 만들어줘", "한 번에 준비해줘" 요청에 사용합니다.
 ---
 
@@ -8,20 +9,22 @@ description: 현수막·명찰·랜딩페이지를 한 번에 만듭니다. 행�
 
 ## 순서
 
-1. `event.yml` 이 있는지 확인합니다. 없으면 `/event-kit:setup` 을 먼저 진행하세요.
-2. 명단 CSV가 있는지 확인합니다. 없으면 명찰은 건너뛰고 나머지를 만든 뒤, 명단이 준비되면 `/event-kit:badge` 만 다시 돌리면 된다고 알려주세요.
-3. 아래를 차례로 실행합니다.
+1. `event.yml` 이 있는지 확인합니다. 없으면 event-kit 의 setup 스킬을 먼저 진행하세요.
+2. 명단 CSV가 있는지 확인합니다. 없으면 명찰은 건너뛰고 나머지를 만든 뒤, 명단이 준비되면 event-kit 의 badge 스킬만 다시 돌리면 된다고 알려주세요.
+3. 아래를 차례로 실행합니다. `PLUGIN_ROOT` 찾는 법: 이 스킬(SKILL.md)과 같은 폴더에 `scripts/` 가 있으면 그 폴더가 PLUGIN_ROOT 입니다. 없으면 이 폴더에서 두 단계 위 폴더(하네스가 알려주는 기준 경로에서 계산)가 PLUGIN_ROOT 입니다.
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py"  --event event.yml --out out/banner
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_badges.py"  --event event.yml --people participants.csv --out out/badge
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_poster.py"  --event event.yml --out out/poster
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_landing.py" --event event.yml --out out/landing
+python3 "$PLUGIN_ROOT/scripts/make_banner.py"  --event event.yml --out out/banner
+python3 "$PLUGIN_ROOT/scripts/make_badges.py"  --event event.yml --people participants.csv --out out/badge
+python3 "$PLUGIN_ROOT/scripts/make_poster.py"  --event event.yml --out out/poster
+python3 "$PLUGIN_ROOT/scripts/make_landing.py" --event event.yml --out out/landing
 ```
+
+(Claude Code에서는 `PLUGIN_ROOT` 가 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다.)
 
 > **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
 > 먼저 `python --version` 으로 확인하세요. 아무것도 안 나오면 파이썬이 없는 것이니
-> `/event-kit:check` 로 무엇이 없는지 먼저 확인하게 하세요.
+> event-kit 의 check 스킬로 무엇이 없는지 먼저 확인하게 하세요.
 
 현수막은 CMYK 변환 때문에 **1~2분** 걸립니다. 기다리는 동안 멈춘 것이 아니라고 미리 알려주세요.
 

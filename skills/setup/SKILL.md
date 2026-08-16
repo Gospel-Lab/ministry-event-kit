@@ -1,4 +1,5 @@
 ---
+name: event-kit-setup
 description: 행사 정보를 물어 event.yml 을 만듭니다. 현수막·명찰·랜딩페이지가 모두 이 파일 하나를 씁니다. 새 행사를 시작할 때, "행사 준비 시작", "event.yml 만들어줘", "수련회 준비" 같은 요청에 사용합니다.
 ---
 
@@ -39,7 +40,7 @@ brief:
 
 ### 대상별로 실제로 달라지는 것
 
-전체 규칙과 근거는 `${CLAUDE_PLUGIN_ROOT}/docs/design-rules.md` 에 출처와 함께 있습니다. 요약하면:
+전체 규칙과 근거는 `$PLUGIN_ROOT/docs/design-rules.md` 에 출처와 함께 있습니다 (`PLUGIN_ROOT` 찾는 법: 이 스킬(SKILL.md)과 같은 폴더에 `scripts/` 가 있으면 그 폴더가 PLUGIN_ROOT 입니다. 없으면 이 폴더에서 두 단계 위 폴더(하네스가 알려주는 기준 경로에서 계산)가 PLUGIN_ROOT 입니다. Claude Code에서는 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다). 요약하면:
 
 - **어르신** — 글자를 15% 키우고 대비가 높은 색으로 갑니다. 대비 감도는 40세부터 떨어져 80세엔 최대 83% 낮아집니다. **글자를 키우는 것보다 대비가 먼저**라고 사용자에게 설명하세요.
 - **전교인·외부초청** — 가장 넓은 나이대가 봅니다. 어르신 기준을 따르는 것이 안전합니다. 외부초청이면 **신청 주소·QR을 크게**.
@@ -63,7 +64,7 @@ brief:
 ## 파일 쓰기
 
 `examples/event.yml` 을 본으로 삼아 사용자의 작업 폴더에 `event.yml` 로 씁니다.
-`${CLAUDE_PLUGIN_ROOT}/examples/event.yml` 에 전체 항목과 주석이 들어 있습니다.
+`$PLUGIN_ROOT/examples/event.yml` 에 전체 항목과 주석이 들어 있습니다.
 
 지켜야 할 것:
 
@@ -81,7 +82,7 @@ brief:
 
 무엇을 만들지 물어보고 해당 스킬로 넘어갑니다.
 
-- 현수막 → `/event-kit:banner`
-- 명찰 → `/event-kit:badge` (명단 CSV가 필요합니다)
-- 신청 페이지 → `/event-kit:landing`
-- 전부 → `/event-kit:all`
+- 현수막 → event-kit 의 banner 스킬
+- 명찰 → event-kit 의 badge 스킬 (명단 CSV가 필요합니다)
+- 신청 페이지 → event-kit 의 landing 스킬
+- 전부 → event-kit 의 all 스킬

@@ -1,4 +1,5 @@
 ---
+name: event-kit-landing
 description: 행사 신청 랜딩페이지를 만듭니다. 구글폼 버튼이 붙은 한 페이지가 나오고 그대로 배포할 수 있습니다. "신청 페이지", "랜딩페이지", "행사 홍보 페이지" 요청에 사용합니다.
 ---
 
@@ -8,13 +9,15 @@ description: 행사 신청 랜딩페이지를 만듭니다. 구글폼 버튼이 
 
 ## 실행
 
+`PLUGIN_ROOT` 찾는 법: 이 스킬(SKILL.md)과 같은 폴더에 `scripts/` 가 있으면 그 폴더가 PLUGIN_ROOT 입니다. 없으면 이 폴더에서 두 단계 위 폴더(하네스가 알려주는 기준 경로에서 계산)가 PLUGIN_ROOT 입니다. (Claude Code에서는 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다.)
+
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_landing.py" --event event.yml --out out/landing
+python3 "$PLUGIN_ROOT/scripts/make_landing.py" --event event.yml --out out/landing
 ```
 
 > **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
 > 먼저 `python --version` 으로 확인하세요. 아무것도 안 나오면 파이썬이 없는 것이니
-> `/event-kit:check` 로 무엇이 없는지 먼저 확인하게 하세요.
+> event-kit 의 check 스킬로 무엇이 없는지 먼저 확인하게 하세요.
 
 ## 나오는 것
 

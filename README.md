@@ -1,6 +1,6 @@
 # ministry-event-kit
 
-**교회·비영리 행사의 인쇄물과 신청 페이지를 한 번에 만드는 Claude Code 플러그인.**
+**교회·비영리 행사의 인쇄물과 신청 페이지를 한 번에 만드는 에이전트 스킬.** Claude Code·코덱스·오픈코드에서 씁니다.
 
 행사 정보를 `event.yml` 에 한 번만 적으면 현수막·명찰·신청 페이지가 **실측 인쇄 규격**으로 나옵니다.
 행사명이 바뀌어도 한 곳만 고치면 전부 따라 바뀝니다.
@@ -48,6 +48,29 @@ Claude Code에서:
 git clone https://github.com/Gospel-Lab/ministry-event-kit
 claude --plugin-dir ./ministry-event-kit
 ```
+
+### 코덱스(Codex)에서
+
+코덱스도 같은 플러그인 마켓플레이스 방식을 씁니다.
+
+```
+codex plugin marketplace add Gospel-Lab/ministry-event-kit
+codex plugin add event-kit@ministry-event-kit
+```
+
+이미 설치돼 있으면 마켓플레이스를 다시 add 하고(local/git snapshot을 새로 받음) `plugin add` 를 한 번 더 실행하면 최신 버전으로 바뀝니다.
+
+### 오픈코드(opencode)에서
+
+오픈코드는 `~/.agents/skills/<이름>/SKILL.md` 폴더를 스킬로 읽는데, **심볼릭 링크는 따라가지 않으므로** 이 리포를 clone 한 뒤 동기화 스크립트로 실제 파일을 복사해 넣어야 합니다.
+
+```bash
+git clone https://github.com/Gospel-Lab/ministry-event-kit
+cd ministry-event-kit
+python scripts/sync_opencode_skills.py
+```
+
+`skills/*/SKILL.md` 나 `scripts/`·`docs/`·`examples/`·`assets/`·`templates/` 를 고칠 때마다 이 스크립트를 다시 돌리면 오픈코드 쪽도 최신 상태로 맞춰집니다.
 
 ### 준비물
 
