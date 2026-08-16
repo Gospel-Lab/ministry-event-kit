@@ -147,14 +147,48 @@ def load_event(path: str | Path) -> dict:
     (key: value / 2단 들여쓰기 / - 목록 / # 주석).
     """
     p = Path(path)
+    if not p.exists():
+        raise SystemExit(
+            f"{p} 파일이 없습니다.\n"
+            f"  · 행사 정보 파일을 먼저 만드세요 (/event-kit:setup)\n"
+            f"  · 파일이 다른 폴더에 있다면 --event 뒤에 그 경로를 적어 주세요")
     raw = p.read_text(encoding="utf-8")
     if p.suffix.lower() == ".json":
         return json.loads(raw)
     try:
         import yaml  # type: ignore
-        return yaml.safe_load(raw) or {}
     except ImportError:
         return _mini_yaml(raw)
+    try:
+        return yaml.safe_load(raw) or {}
+    except yaml.YAMLError as e:                  # noqa: PERF203
+        raise SystemExit(_yaml_help(p, raw, e)) from None
+
+
+def _yaml_help(path: Path, raw: str, err) -> str:
+    """문법 오류를 사람이 고칠 수 있는 말로 바꿉니다.
+
+    그냥 두면 파이썬 추적(traceback) 20줄이 그대로 뜹니다.
+    디자인 도구도 못 다루는 분이 쓰는 도구에서 그것은 막다른 길입니다.
+    """
+    mark = getattr(err, "problem_mark", None)
+    out = [f"{path.name} 을 읽지 못했습니다 — 문법이 맞지 않습니다.", ""]
+    if mark is not None:
+        lines = raw.splitlines()
+        n = mark.line                            # 0부터 셉니다
+        for i in range(max(0, n - 1), min(len(lines), n + 2)):
+            head = "→" if i == n else " "
+            out.append(f"  {head} {i + 1:>3} | {lines[i]}")
+        out.append(f"        {' ' * (mark.column + 4)}^  이 부근")
+    out += [
+        "",
+        "자주 나오는 원인",
+        '  · 값에 : 나 # 나 따옴표가 들어 있으면 값 전체를 "큰따옴표"로 감싸세요',
+        '        title: "특별새벽기도: 다시 시작"',
+        "  · 들여쓰기는 공백으로만 합니다. 탭(Tab)은 오류가 납니다",
+        "  · 목록은 - 뒤에 공백을 한 칸 둡니다",
+    ]
+    return "\n".join(out)
 
 
 def _strip_comment(s: str) -> str:
