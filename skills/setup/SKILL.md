@@ -85,4 +85,5 @@ brief:
 - 현수막 → event-kit 의 banner 스킬
 - 명찰 → event-kit 의 badge 스킬 (명단 CSV가 필요합니다)
 - 신청 페이지 → event-kit 의 landing 스킬
+- 준비 체크리스트 → event-kit 의 checklist 스킬
 - 전부 → event-kit 의 all 스킬

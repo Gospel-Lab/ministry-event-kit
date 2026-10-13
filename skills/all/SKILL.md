@@ -18,6 +18,7 @@ python3 "$PLUGIN_ROOT/scripts/make_banner.py"  --event event.yml --out out/banne
 python3 "$PLUGIN_ROOT/scripts/make_badges.py"  --event event.yml --people participants.csv --out out/badge
 python3 "$PLUGIN_ROOT/scripts/make_poster.py"  --event event.yml --out out/poster
 python3 "$PLUGIN_ROOT/scripts/make_landing.py" --event event.yml --out out/landing
+python3 "$PLUGIN_ROOT/scripts/make_checklist.py" --event event.yml --out out/checklist
 ```
 
 (Claude Code에서는 `PLUGIN_ROOT` 가 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다.)
@@ -37,5 +38,6 @@ python3 "$PLUGIN_ROOT/scripts/make_landing.py" --event event.yml --out out/landi
 | 현수막 | 인쇄소 주문 · 차광 원단 요청 |
 | 명찰 | A4로 시험 인쇄 후 전량 인쇄 |
 | 랜딩페이지 | 구글폼 주소 넣고 vercel.com/drop 에 올리기 |
+| 체크리스트 | 출력해서 하나씩 지우기 — 빠진 할 일이 있으면 `checklist.todo` 에 더하기 |
 
 아직 비어 있는 값(`미정`, 자리표시 구글폼 주소 등)이 있으면 **무엇이 비었는지 목록으로** 알려주세요.

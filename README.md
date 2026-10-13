@@ -9,7 +9,8 @@
 event.yml  ──┬──▶  현수막      실측 PDF + CMYK 이미지 + 발주안내
              ├──▶  포스터      A4~A1 인쇄용 + 카톡·인스타용 이미지 + 신청 QR
              ├──▶  명찰        명단 CSV → 인원수만큼 한 번에 (A4 4개씩 배치본 포함)
-             └──▶  신청페이지   구글폼 버튼 + 그대로 배포 가능
+             ├──▶  신청페이지   구글폼 버튼 + 그대로 배포 가능
+             └──▶  체크리스트   준비물·할 일 A4 한 장 (출력해서 지워 가며 쓰기)
 ```
 
 디자인 도구를 다루지 못해도, 코드를 몰라도 됩니다. 대화로 요청하면 됩니다.
@@ -110,6 +111,7 @@ python3 scripts/doctor.py     # 윈도우: python scripts\doctor.py
 /event-kit:poster     포스터 (인쇄용 + 웹용)
 /event-kit:badge      명찰 (명단 CSV 필요)
 /event-kit:landing    신청 랜딩페이지
+/event-kit:checklist  준비 체크리스트 (A4 한 장)
 /event-kit:all        전부 한 번에
 ```
 
@@ -122,6 +124,7 @@ python3 scripts/make_banner.py  --event event.yml --out out/banner
 python3 scripts/make_poster.py  --event event.yml --out out/poster
 python3 scripts/make_badges.py  --event event.yml --people participants.csv --out out/badge
 python3 scripts/make_landing.py --event event.yml --out out/landing
+python3 scripts/make_checklist.py --event event.yml --out out/checklist
 ```
 
 ---
@@ -155,6 +158,20 @@ schedule:
 ```
 
 일정은 **`날짜 묶음 | 시간 내용`** 형식으로 씁니다. 이 형식이라야 명찰 뒷면과 랜딩페이지에서 날짜별로 묶입니다.
+
+### 준비 체크리스트
+
+```yaml
+checklist:
+  title: 준비 체크리스트 (총무 확인용)
+  facts:                       # 위쪽 요약 상자 — 머리 | 내용
+    - 버스 | 충북70바0000 · 기사님 010-0000-0000
+  todo:                        # 묶음 | 할 일 | 담당(선택)
+    - 순서지 (출력 전) | 장소명 **막동사랑교회**로 고치기
+    - 인원 연락 | 식당 인원 30명 재확인 | 회계
+```
+
+`todo` 를 비워 두면 행사 준비의 기본 순서(D-30 기획 → D-14 예약 → D-3 점검 → 당일 가져갈 것)로 채웁니다. 항목이 많으면 글자를 줄여 **A4 한 장**에 맞춥니다.
 
 ---
 
@@ -285,7 +302,7 @@ banner:
 ```
 ministry-event-kit/
 ├─ .claude-plugin/     플러그인·마켓플레이스 매니페스트
-├─ skills/             setup · banner · badge · landing · all
+├─ skills/             check · setup · banner · poster · badge · landing · checklist · all
 ├─ scripts/            kit.py(공통 엔진) · theme.py(색) · doctor.py(점검) + 생성기
 ├─ templates/          현수막 SVG 템플릿
 ├─ assets/fonts/       Pretendard 서브셋 (OFL 1.1)
