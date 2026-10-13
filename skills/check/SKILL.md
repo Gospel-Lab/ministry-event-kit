@@ -1,4 +1,5 @@
 ---
+name: event-kit-check
 description: 이 컴퓨터에서 키트가 돌아가는지 점검합니다. 무엇이 없고 어떻게 설치하는지 알려줍니다. 처음 설치했을 때, "안 돌아가요", "오류가 나요", "설치 확인", 크롬·고스트스크립트 관련 오류가 났을 때 사용합니다.
 ---
 
@@ -9,15 +10,19 @@ description: 이 컴퓨터에서 키트가 돌아가는지 점검합니다. 무�
 
 ## 실행
 
+`PLUGIN_ROOT` 찾는 법: 이 스킬(SKILL.md)과 같은 폴더에 `scripts/` 가 있으면 그 폴더가 PLUGIN_ROOT 입니다. 없으면 이 폴더에서 두 단계 위 폴더(`skills/check` 의 부모의 부모, 하네스가 알려주는 기준 경로에서 계산)가 PLUGIN_ROOT 입니다.
+
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/doctor.py"
+python3 "$PLUGIN_ROOT/scripts/doctor.py"
 ```
 
 윈도우:
 
 ```
-python "%CLAUDE_PLUGIN_ROOT%\scripts\doctor.py"
+python "%PLUGIN_ROOT%\scripts\doctor.py"
 ```
+
+(Claude Code에서는 `PLUGIN_ROOT` 가 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다.)
 
 `python` 이 없다고 나오면 `py -3` 으로 해보세요. 그것도 안 되면 파이썬이 설치돼 있지 않은 것입니다.
 

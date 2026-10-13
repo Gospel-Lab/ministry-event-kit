@@ -1,4 +1,5 @@
 ---
+name: event-kit-badge
 description: 참가자 명단(CSV)으로 명찰을 인원수만큼 한 번에 만듭니다. 인쇄소용 PDF와 A4 4개씩 배치본, 뒷면 일정표까지 나옵니다. "명찰 만들어줘", "이름표", "네임택" 요청에 사용합니다.
 ---
 
@@ -24,14 +25,16 @@ description: 참가자 명단(CSV)으로 명찰을 인원수만큼 한 번에 �
 
 ## 2. 실행
 
+`PLUGIN_ROOT` 찾는 법: 이 스킬(SKILL.md)과 같은 폴더에 `scripts/` 가 있으면 그 폴더가 PLUGIN_ROOT 입니다. 없으면 이 폴더에서 두 단계 위 폴더(하네스가 알려주는 기준 경로에서 계산)가 PLUGIN_ROOT 입니다. (Claude Code에서는 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다.)
+
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_badges.py" \
+python3 "$PLUGIN_ROOT/scripts/make_badges.py" \
   --event event.yml --people participants.csv --out out/badge
 ```
 
 > **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
 > 먼저 `python --version` 으로 확인하세요. 아무것도 안 나오면 파이썬이 없는 것이니
-> `/event-kit:check` 로 무엇이 없는지 먼저 확인하게 하세요.
+> event-kit 의 check 스킬로 무엇이 없는지 먼저 확인하게 하세요.
 
 ## 나오는 것
 

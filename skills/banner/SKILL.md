@@ -1,4 +1,5 @@
 ---
+name: event-kit-banner
 description: 행사 현수막을 실측 인쇄 규격으로 만듭니다. 인쇄용 PDF와 CMYK 이미지, 발주 안내문까지 나옵니다. "현수막 만들어줘", "배너 제작", "백드롭" 요청에 사용합니다.
 ---
 
@@ -8,15 +9,17 @@ description: 행사 현수막을 실측 인쇄 규격으로 만듭니다. 인쇄
 
 ## 실행
 
+`PLUGIN_ROOT` 찾는 법: 이 스킬(SKILL.md)과 같은 폴더에 `scripts/` 가 있으면 그 폴더가 PLUGIN_ROOT 입니다. 없으면 이 폴더에서 두 단계 위 폴더(하네스가 알려주는 기준 경로에서 계산)가 PLUGIN_ROOT 입니다. (Claude Code에서는 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다.)
+
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py" --event event.yml --out out/banner
+python3 "$PLUGIN_ROOT/scripts/make_banner.py" --event event.yml --out out/banner
 ```
 
 > **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
 > 먼저 `python --version` 으로 확인하세요. 아무것도 안 나오면 파이썬이 없는 것이니
-> `/event-kit:check` 로 무엇이 없는지 먼저 확인하게 하세요.
+> event-kit 의 check 스킬로 무엇이 없는지 먼저 확인하게 하세요.
 
-`event.yml` 이 없으면 먼저 `/event-kit:setup` 으로 만드세요. 크기·마감·색만 급히 바꾸려면 `event.yml` 의 `banner:` 항목만 고치고 다시 실행하면 됩니다.
+`event.yml` 이 없으면 먼저 event-kit 의 setup 스킬로 만드세요. 크기·마감·색만 급히 바꾸려면 `event.yml` 의 `banner:` 항목만 고치고 다시 실행하면 됩니다.
 
 ## 나오는 것
 
@@ -33,7 +36,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_banner.py" --event event.yml --out o
 
 1. 실측 크기가 맞는지 — 아래 한 줄이면 윈도우·맥 어디서나 됩니다 (`pdfinfo` 는 윈도우에 없습니다)
    ```bash
-   python3 -c "import sys;sys.path.insert(0,r'${CLAUDE_PLUGIN_ROOT}/scripts');from kit import pdf_page_size_mm;from pathlib import Path;print(pdf_page_size_mm(Path('out/banner/banner_print.pdf')))"
+   python3 -c "import sys;sys.path.insert(0,r'$PLUGIN_ROOT/scripts');from kit import pdf_page_size_mm;from pathlib import Path;print(pdf_page_size_mm(Path('out/banner/banner_print.pdf')))"
    ```
 2. 타이틀 글자 높이 — `발주안내.txt` 에 적힌 값. **1m당 3cm** 기준으로 몇 미터에서 읽히는지 함께 말해주세요
 3. 파일 용량 — 온라인 주문처는 대개 500MB 이하만 받습니다

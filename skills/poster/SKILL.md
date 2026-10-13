@@ -1,4 +1,5 @@
 ---
+name: event-kit-poster
 description: 행사 포스터를 만듭니다. 인쇄용(A4·A3·A2·A1)과 카톡·인스타에 올릴 웹포스터가 함께 나오고, 신청 QR도 들어갑니다. "포스터 만들어줘", "홍보물", "게시판에 붙일 거", "카톡에 올릴 이미지" 요청에 사용합니다.
 ---
 
@@ -8,8 +9,10 @@ description: 행사 포스터를 만듭니다. 인쇄용(A4·A3·A2·A1)과 카�
 
 ## 실행
 
+`PLUGIN_ROOT` 찾는 법: 이 스킬(SKILL.md)과 같은 폴더에 `scripts/` 가 있으면 그 폴더가 PLUGIN_ROOT 입니다. 없으면 이 폴더에서 두 단계 위 폴더(하네스가 알려주는 기준 경로에서 계산)가 PLUGIN_ROOT 입니다. (Claude Code에서는 `${CLAUDE_PLUGIN_ROOT}` 로 자동 치환됩니다.)
+
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_poster.py" --event event.yml --out out/poster
+python3 "$PLUGIN_ROOT/scripts/make_poster.py" --event event.yml --out out/poster
 ```
 
 > **윈도우에서는 `python3` 대신 `python` 또는 `py -3` 을 씁니다.**
@@ -17,7 +20,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_poster.py" --event event.yml --out o
 크기를 바로 지정할 수도 있습니다.
 
 ```bash
-python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_poster.py" --event event.yml --size A2 --out out/poster
+python3 "$PLUGIN_ROOT/scripts/make_poster.py" --event event.yml --size A2 --out out/poster
 ```
 
 ## 나오는 것
@@ -44,7 +47,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/scripts/make_poster.py" --event event.yml --size 
 
 ## 이 포스터가 지키는 원칙
 
-`${CLAUDE_PLUGIN_ROOT}/docs/design-rules.md` 에 근거와 함께 있습니다.
+`$PLUGIN_ROOT/docs/design-rules.md` 에 근거와 함께 있습니다.
 
 1. **위계는 크기 차이로 만든다** — 서체를 여러 개 쓰지 않습니다
 2. **필수 정보 네 가지** — 행사명 / 날짜·시간 / 장소 / **참여 방법**
